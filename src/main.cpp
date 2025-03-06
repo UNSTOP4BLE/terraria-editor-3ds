@@ -16,15 +16,20 @@ int main(void) {
 
 	Terraria::LoadItemsList("romfs:/items.txt");
 
+//    app->clearcol = C2D_Color32(51, 85, 153, 255);
+
+//    setScreen(new TitleScreen(0, Intro));
+
+
 	while(aptMainLoop()) {
 		hidScanInput();
 		hidTouchRead(&app->touch);
+		if (app->currentScene == NULL) 	
+			break;
 
 		GFX::clear(app->clearcol);
-		spr->pos = {(int)app->touch.px, (int)app->touch.py, spr->pos.w, spr->pos.h};
-		spr->draw(app->screens->bottom);
-
-
+  		app->currentScene->update();  
+		app->currentScene->draw();  
 		GFX::flip();
 	}
 

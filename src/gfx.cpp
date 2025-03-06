@@ -36,7 +36,7 @@ void init(void) {
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
     app->screens = new RenderScreens();
-    app->clearcol = C2D_Color32f(0, 1, 0, 1);
+    app->clearcol = C2D_Color32(0, 255, 0, 255);
 
 }
 
