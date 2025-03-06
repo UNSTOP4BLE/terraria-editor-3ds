@@ -1,0 +1,7 @@
+# Hashes of file build rules.
+d8e9801a5d1a2bff95a4ec8505d84309 CMakeFiles/test_3dsx
+d8e9801a5d1a2bff95a4ec8505d84309 CMakeFiles/tex
+e989929af0adb8a0a0790034f04f188e assets/Items/items.t3x
+d992e84d095edc187ffa5b7e7939b851 assets/sprites.t3x
+efeb81a0f038388df5636b384737c0b6 test.3dsx
+b1fcaf6b6deb936a0af83c194e4997b0 test.smdh
