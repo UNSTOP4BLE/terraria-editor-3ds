@@ -23,16 +23,16 @@ public:
 
 class Sprite2D {
 public:
-    Sprite2D(C2D_SpriteSheet _sprsheet, int i);
     void draw(C3D_RenderTarget* screen);
     void setXY(int x, int y);
     bool visible;
 	Rect pos;
-private:
 	C2D_Sprite spr;
     C2D_SpriteSheet sprsheet; //sprite sheet pointer
+private:
 };
 
+Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i);
 
 void init(void);
 void clear(uint32_t col);
