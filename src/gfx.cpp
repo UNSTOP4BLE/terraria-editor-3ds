@@ -50,6 +50,8 @@ void clear(uint32_t col) {
 	C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 	C2D_TargetClear(app->screens->top, col);
 	C2D_TargetClear(app->screens->bottom, col);
+    C2D_SceneBegin(app->screens->top);
+    C2D_SceneBegin(app->screens->bottom);
 }
 
 void flip(void) {
