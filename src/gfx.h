@@ -25,6 +25,7 @@ class Sprite2D {
 public:
     Sprite2D(C2D_SpriteSheet _sprsheet, int i);
     void draw(C3D_RenderTarget* screen);
+    void setXY(int x, int y);
     bool visible;
 	Rect pos;
 private:

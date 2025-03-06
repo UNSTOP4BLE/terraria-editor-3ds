@@ -10,8 +10,7 @@ RenderScreens::RenderScreens(void) {
 
 Sprite2D::Sprite2D(C2D_SpriteSheet _sprsheet, int i) {
     sprsheet = _sprsheet;
-    //have to test this min
-    int cursprite = std::min(static_cast<int>(C2D_SpriteSheetCount(sprsheet)), i); //dont allow using a sprite that doesnt exist
+    int cursprite = std::min(static_cast<int>(C2D_SpriteSheetCount(sprsheet))-1, i); //dont allow using a sprite that doesnt exist
 	C2D_SpriteFromSheet(&spr, sprsheet, cursprite);
 	C2D_SpriteSetCenter(&spr, 0.5, 0.5);
     pos = {0, 0, static_cast<int>(spr.params.pos.w), static_cast<int>(spr.params.pos.h)};
@@ -28,6 +27,10 @@ void Sprite2D::draw(C3D_RenderTarget* screen) {
         C2D_SceneBegin(screen);
     	C2D_DrawSprite(&spr);
     }
+}
+
+void Sprite2D::setXY(int x, int y) {
+    pos = {x, y, pos.w, pos.h};
 }
 
 void init(void) {
