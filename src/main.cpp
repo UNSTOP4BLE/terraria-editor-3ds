@@ -16,10 +16,8 @@ int main(void) {
 		hidScanInput();
 		hidTouchRead(&app->touch);
 		GFX::clear(app->clearcol);
-		#ifndef __3DS__
   		app->currentScene->update();  
 		app->currentScene->draw();  
-		#endif
 		GFX::flip();
 	}
 
