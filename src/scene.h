@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class Scene {
 public:
     inline Scene(void) {}
@@ -8,5 +10,5 @@ public:
     virtual ~Scene(void) {}
 };
 
-void setScene(Scene *scr);
+void setScene(Scene *scn);
 void setSceneCol(uint32_t color);
