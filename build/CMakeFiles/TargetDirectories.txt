@@ -1,5 +1,0 @@
-/Users/bruno/Desktop/terraria-editor/build/CMakeFiles/test.dir
-/Users/bruno/Desktop/terraria-editor/build/CMakeFiles/tex.dir
-/Users/bruno/Desktop/terraria-editor/build/CMakeFiles/test_3dsx.dir
-/Users/bruno/Desktop/terraria-editor/build/CMakeFiles/edit_cache.dir
-/Users/bruno/Desktop/terraria-editor/build/CMakeFiles/rebuild_cache.dir
