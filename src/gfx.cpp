@@ -1,5 +1,9 @@
 #include "gfx.h"
 #include "app.h"
+#include <cstdarg>
+#include <string>  
+#include <cstring>  
+#include <cstdio>
 
 namespace GFX {
 
@@ -15,6 +19,10 @@ Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i) {
 	C2D_SpriteFromSheet(&sprite.spr, sprite.sprsheet, cursprite);
 	C2D_SpriteSetCenter(&sprite.spr, 0.5, 0.5);
     sprite.pos = {0, 0, static_cast<int>(sprite.spr.params.pos.w), static_cast<int>(sprite.spr.params.pos.h)};
+    sprite.visible = true;
+
+    if (!sprite.sprsheet)
+        while(1) {}
     return sprite;
 }
 
@@ -28,6 +36,11 @@ void Sprite2D::draw(C3D_RenderTarget* screen) {
         C2D_SceneBegin(screen);
     	C2D_DrawSprite(&spr);
     }
+}
+
+void Sprite2D::scale(float scale) {
+    pos.w *= scale;
+    pos.h *= scale;
 }
 
 void Sprite2D::setXY(int x, int y) {
@@ -67,6 +80,88 @@ void exit(void) {
 	C3D_Fini();
 	gfxExit();
     delete app->screens;
+}
+
+void FontManager::init(const char *path) {
+    fontsheet = C2D_SpriteSheetLoad(path);
+    fontscale = 1;
+}
+void FontManager::setScale(float scale) {
+    fontscale = scale;
+}
+int FontManager::getW(const char *str) {
+    int c;
+    int width = 0;
+    while ((c = *str++) != '\0')
+    {
+        //Shift and validate character
+        if ((c -= 0x20) >= 0x60)
+            continue;
+            
+        Sprite2D curchar = GFX::LoadSprite2D(fontsheet, c);
+        C2D_SpriteSetCenter(&curchar.spr, 0, 0);
+        curchar.scale(fontscale);
+        //Add width
+        width += curchar.pos.w;
+    }
+    return width;
+}
+
+void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...) {
+    va_list list;
+    
+    char str[1024] = "";
+
+    va_start(list, format);
+    std::vsprintf(str, format, list);
+    va_end(list);
+
+    //Draw string character by character
+    int c;
+    int xhold = x;
+    
+    switch (all) {
+        case Center:
+            x -= getW(str) >> 1;
+            break;
+        case Left:
+            break;
+        case Right:
+            x -= getW(str);
+            break;
+    }
+
+    int i = 0;      
+    while ((c = str[i++]) != '\0')
+    {
+        Sprite2D curchar = GFX::LoadSprite2D(fontsheet, 0);
+        curchar.scale(fontscale);
+
+        if (c == '\n') {
+            x = xhold;
+            if (all == Center)
+                x -= getW(str) >> 1;
+            y += curchar.pos.h;
+            y += 3;
+            continue;
+        }   
+        //Shift and validate character
+        if ((c -= 0x20) >= 0x60)
+            continue;
+        //Draw character
+        curchar = GFX::LoadSprite2D(fontsheet, c);
+        curchar.scale(fontscale);
+        C2D_SpriteSetCenter(&curchar.spr, 0, 0);
+        curchar.setXY(x, y);
+        curchar.draw(screen);
+        x += curchar.pos.w;
+    }
+
+    setScale(1);
+}
+
+void FontManager::del(void) {
+    C2D_SpriteSheetFree(fontsheet);
 }
 
 }

@@ -11,6 +11,7 @@ int main(void) {
 	romfsInit();
 	app = new Terraeditor();
 	GFX::init();
+	app->fontManager.init("romfs:/font/font.t3x");
 	
     setScene(new InventoryScene());
 
@@ -27,7 +28,7 @@ int main(void) {
 	// Deinit libs
 	romfsExit();
 	GFX::exit();
-
+	app->fontManager.del();
 	delete app;
 	return 0;
 }

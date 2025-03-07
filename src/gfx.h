@@ -24,6 +24,7 @@ public:
 class Sprite2D {
 public:
     void draw(C3D_RenderTarget* screen);
+    void scale(float scale);
     void setXY(int x, int y);
     bool visible;
 	Rect pos;
@@ -38,5 +39,27 @@ void init(void);
 void clear(uint32_t col);
 void flip(void);
 void exit(void);
+
+enum Align
+{   
+    Center,
+    Left,
+    Right
+};
+
+
+class FontManager {
+public:
+    void init(const char *path);
+    void setScale(float scale);
+    void print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...);
+    void del(void);
+private:
+    int getW(const char *str);
+    void printMSG(C3D_RenderTarget * screen, int x, int y, const char *str, Align all);
+    C2D_SpriteSheet fontsheet;
+    float fontscale;
+};
+    
 
 }

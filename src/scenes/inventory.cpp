@@ -4,7 +4,8 @@
 
 InventoryScene::InventoryScene(void) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
-    
+    scroll = 0;
+    selection = 0;
 	Terraria::LoadItemsList("romfs:/items.txt");
     sprites = C2D_SpriteSheetLoad("romfs:/inventory.t3x");
     box_idle = GFX::LoadSprite2D(sprites, 0);
@@ -45,7 +46,7 @@ void InventoryScene::draw(void) {
     scrollbar.draw(app->screens->bottom);
         
     // Initial position and spacing
-    int _xy[2] = {87, 65 - scroll};  // hardcoded cause "fuck good code"
+    int _xy[2] = {87, 65 - scroll};  // hardcoded cause fuck good code
     int xy[2] = {_xy[0], _xy[1]};
     const int spacing = 49;
 
@@ -68,9 +69,12 @@ void InventoryScene::draw(void) {
             box.draw(app->screens->bottom);
         }
     }
-
+    
+    //top screen
     infopanel.setXY(GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2);
     infopanel.draw(app->screens->top);
+
+	app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "Copper Pickaxe");
 }
 
 InventoryScene::~InventoryScene(void) {
