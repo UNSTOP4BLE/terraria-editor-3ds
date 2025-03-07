@@ -16,9 +16,7 @@ int main(void) {
     setScene(new InventoryScene());
 
 	while(aptMainLoop()) {
-		hidScanInput(); //to clean up
 		Pad::Read();
-		hidTouchRead(&app->touch); //to clean up
 		GFX::clear(app->clearcol);
   		app->currentScene->update();  
 		app->currentScene->draw();  

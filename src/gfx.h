@@ -36,6 +36,7 @@ private:
 Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i);
 
 void init(void);
+void drawRect(C3D_RenderTarget* screen, Rect r, uint32_t col);
 void clear(uint32_t col);
 void flip(void);
 void exit(void);

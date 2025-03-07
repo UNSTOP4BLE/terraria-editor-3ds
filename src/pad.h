@@ -1,5 +1,8 @@
 #pragma once 
 
+#include <3ds.h>
+#include "gfx.h"
+
 namespace Pad {
     constexpr int KEY_A = 0;
     constexpr int KEY_B = 1;
@@ -28,4 +31,6 @@ namespace Pad {
     void Read(void);
     bool Held(int key);
     bool Pressed(int key);
+    touchPosition GetTouchPos(void);
+    bool isTouching(GFX::Rect r);
 }

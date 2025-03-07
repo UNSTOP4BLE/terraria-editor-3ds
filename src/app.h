@@ -10,7 +10,6 @@ public:
     GFX::FontManager fontManager;
     Scene *currentScene;
     uint32_t clearcol;
-	touchPosition touch;
 };
 
 extern Terraeditor *app;
