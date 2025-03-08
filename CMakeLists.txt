@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(
-    test
+    terraedit
     VERSION      "1.0.0"
-    DESCRIPTION  "pspfunki"
+    DESCRIPTION  "terrariaeditor"
     LANGUAGES    C CXX
 )
 file(
