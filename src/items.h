@@ -11,9 +11,9 @@ constexpr int NUM_AMMO_SLOTS = 4;
 constexpr int INVENTORY_SLOT_SPACING = 49;
 
 struct [[gnu::packed]] InternalItem {
-    int16_t ItemID;
-    int16_t ItemCount;
-    uint8_t Modifier;
+    int16_t itemid;
+    int16_t count;
+    uint8_t modifier;
 };
 
 class Item {
