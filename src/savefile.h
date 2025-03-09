@@ -16,7 +16,6 @@ struct CharacterData {
     InternalItem ammo[4];
 };
     
-
 class SaveFileParser {
 public:
     void readFile(const char *path);

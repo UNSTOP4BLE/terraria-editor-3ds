@@ -15,14 +15,13 @@ RenderScreens::RenderScreens(void) {
 Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i) {
     Sprite2D sprite;
     sprite.sprsheet = _sprsheet;
+    ASSERTFUNC(_sprsheet, "sprite sheet doesnt exist");
     int cursprite = std::min(static_cast<int>(C2D_SpriteSheetCount(sprite.sprsheet))-1, i); //dont allow using a sprite that doesnt exist
 	C2D_SpriteFromSheet(&sprite.spr, sprite.sprsheet, cursprite);
 	C2D_SpriteSetCenter(&sprite.spr, 0.5, 0.5);
     sprite.pos = {0, 0, static_cast<int>(sprite.spr.params.pos.w), static_cast<int>(sprite.spr.params.pos.h)};
     sprite.visible = true;
-
-    if (!sprite.sprsheet)
-        while(1) {}
+    
     return sprite;
 }
 
@@ -36,6 +35,10 @@ void Sprite2D::draw(C3D_RenderTarget* screen) {
         C2D_SceneBegin(screen);
     	C2D_DrawSprite(&spr);
     }
+}
+
+void Sprite2D::setZ(float z) {
+    C2D_SpriteSetDepth(&spr, z);		
 }
 
 void Sprite2D::scale(float scale) {
@@ -119,7 +122,6 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
     //Draw string character by character
     int c;
     int xhold = x;
-    
     switch (all) {
         case Center:
             x -= getW(str) >> 1;
@@ -153,10 +155,12 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
         curchar.scale(fontscale);
         C2D_SpriteSetCenter(&curchar.spr, 0, 0);
         curchar.setXY(x, y);
+        curchar.setZ(z);
         curchar.draw(screen);
         x += curchar.pos.w;
     }
 
+    z = 0;
     setScale(1);
 }
 

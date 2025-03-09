@@ -1,12 +1,12 @@
 #include "inventory.h"
-#include "../items.h"
 #include "../pad.h"
+#include <cstdio>
 
 InventoryScene::InventoryScene(void) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     scroll = 0;
     selection = 0;
-	Terraria::LoadItemsList("romfs:/items.txt");
+	Terraria::LoadItemsList("romfs:/items.txt", &itemslist);
     sprites = C2D_SpriteSheetLoad("romfs:/inventory.t3x");
     box_idle = GFX::LoadSprite2D(sprites, 0);
     box_hotbar = GFX::LoadSprite2D(sprites, 1);
@@ -17,6 +17,9 @@ InventoryScene::InventoryScene(void) {
     scrollbar.setXY(311, 46);
     infopanel = GFX::LoadSprite2D(sprites, 6);
     infopanel.setXY(GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2);
+
+    //load save
+    parser.readFile("romfs:/1.p");
 }
 
 int clamp(int d, int min, int max) {
@@ -76,13 +79,28 @@ void InventoryScene::draw(void) {
         } else if (i != 0) {
             xy[0] += spacing; // Move right
         }
-
+        
+        Terraria::Item curitem = Terraria::getItem(parser.chardata.items[i].itemid, itemslist);
+        int curitemcount = parser.chardata.items[i].count;
+//        int curitemmodifier = parser.chardata.items[i].modifier;
         // Set the box based on selection and type
         if (Pad::isTouching({xy[0]-((spacing-3)/2), xy[1]-((spacing-3)/2), spacing-3, spacing-3}))
             selection = i;
         if (selection == i) {
             box_selected.setXY(xy[0], xy[1]);
             box_selected.draw(app->screens->bottom);
+
+            //item name
+            app->fontManager.z = 1;
+            app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "%s", curitem.item.c_str());
+
+            //item id
+            char idstring[64];
+            sprintf(idstring, "id(%d)", curitem.id);
+            app->fontManager.setScale(0.8);
+            app->fontManager.z = 1;
+            app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8, idstring);
+            //item count todo 
         } else {
             auto& box = (i < Terraria::NUM_HOTBAR_SLOTS) ? box_hotbar : box_idle;
             box.setXY(xy[0], xy[1]);
@@ -97,9 +115,6 @@ void InventoryScene::draw(void) {
     
     //top screen
     infopanel.draw(app->screens->top);
-
-//	app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "Copper Pickaxe");
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "%d %d", scroll, scrollbar.pos.y);
 }
 
 InventoryScene::~InventoryScene(void) {

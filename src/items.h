@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace Terraria {
 
@@ -17,9 +19,11 @@ struct [[gnu::packed]] InternalItem {
 };
 
 class Item {
+public:
     int id;
-    const char *item[64];
+    std::string item;
 };
-void LoadItemsList(const char *path);
+void LoadItemsList(const char *path, std::vector<Item> *itemslist);
+Item getItem(int itemid, std::vector<Item> &itemslist);
 
 }

@@ -1,4 +1,5 @@
 #include "savefile.h"
+#include "app.h"
 #include <cstdint>
 #include <cstdio>
 
@@ -8,7 +9,7 @@ void SaveFileParser::readFile(const char *path) {
     FILE *f = fopen(path,"rb");  
     inputpath = path;
 
-    //todo add open error detection
+    ASSERTFUNC(f, "failed to open file");
 
     //get file size
     fseek(f, 0, SEEK_END);
@@ -25,9 +26,9 @@ void SaveFileParser::readFile(const char *path) {
     fseek(f, 0x46, SEEK_CUR);
 
     chardata.headersize = ftell(f);
-
     // ITEMS
     fread(&chardata.items, sizeof(chardata.items), 1, f);
+
     // COINS
     fread(&chardata.coins, sizeof(chardata.coins), 1, f);
     // AMMO
@@ -37,7 +38,11 @@ void SaveFileParser::readFile(const char *path) {
 void SaveFileParser::writeFile(const char *path) {
     FILE *fout = fopen(path,"wb");  
     FILE *fin = fopen(inputpath.c_str(),"rb"); 
-    //todo add open error detection
+
+    ASSERTFUNC(fin, "failed to open file");
+    ASSERTFUNC(fout, "failed to open file");
+
+    
     uint8_t indata[filesize];
 
     //copy over the original file

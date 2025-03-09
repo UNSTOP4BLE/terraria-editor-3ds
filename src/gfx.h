@@ -24,6 +24,7 @@ public:
 class Sprite2D {
 public:
     void draw(C3D_RenderTarget* screen);
+    void setZ(float z);
     void scale(float scale);
     void setXY(int x, int y);
     bool visible;
@@ -55,6 +56,7 @@ public:
     void setScale(float scale);
     void print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...);
     void del(void);
+    float z;
 private:
     int getW(const char *str);
     void printMSG(C3D_RenderTarget * screen, int x, int y, const char *str, Align all);
