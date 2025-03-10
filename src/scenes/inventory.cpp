@@ -82,7 +82,7 @@ void InventoryScene::draw(void) {
         
         Terraria::Item curitem = Terraria::getItem(parser.chardata.items[i].itemid, itemslist);
         int curitemcount = parser.chardata.items[i].count;
-//        int curitemmodifier = parser.chardata.items[i].modifier;
+        int curitemmodifier = parser.chardata.items[i].modifier;
         // Set the box based on selection and type
         if (Pad::isTouching({xy[0]-((spacing-3)/2), xy[1]-((spacing-3)/2), spacing-3, spacing-3}))
             selection = i;
@@ -92,14 +92,18 @@ void InventoryScene::draw(void) {
 
             //item name
             app->fontManager.z = 1;
+            //todo print using modifier
             app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "%s", curitem.item.c_str());
 
-            //item id
-            char idstring[64];
-            sprintf(idstring, "id(%d)", curitem.id);
+            //item count and modifier
             app->fontManager.setScale(0.8);
             app->fontManager.z = 1;
-            app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8, idstring);
+            app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8, "%d in inventory\nmodifier(%d)", curitemcount, curitemmodifier);
+
+            //item id
+            app->fontManager.setScale(0.8);
+            app->fontManager.z = 1;
+            app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8, "id(%d)", curitem.id);
             //item count todo 
         } else {
             auto& box = (i < Terraria::NUM_HOTBAR_SLOTS) ? box_hotbar : box_idle;
@@ -115,6 +119,8 @@ void InventoryScene::draw(void) {
     
     //top screen
     infopanel.draw(app->screens->top);
+    app->fontManager.setScale(0.8);
+    app->fontManager.print(app->screens->top, GFX::Center, 80, 126, "Replace with:");
 }
 
 InventoryScene::~InventoryScene(void) {

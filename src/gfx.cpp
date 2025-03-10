@@ -119,12 +119,16 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
     std::vsprintf(str, format, list);
     va_end(list);
 
+    Sprite2D curchar = GFX::LoadSprite2D(fontsheet, 0);
+
     //Draw string character by character
     int c;
     int xhold = x;
     switch (all) {
         case Center:
-            x -= getW(str) >> 1;
+            x -= getW(str) / 2;
+            y -= curchar.pos.h / 2;
+
             break;
         case Left:
             break;
@@ -136,7 +140,7 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
     int i = 0;      
     while ((c = str[i++]) != '\0')
     {
-        Sprite2D curchar = GFX::LoadSprite2D(fontsheet, 0);
+        curchar = GFX::LoadSprite2D(fontsheet, 0);
         curchar.scale(fontscale);
 
         if (c == '\n') {
