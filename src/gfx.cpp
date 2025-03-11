@@ -127,7 +127,7 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
     switch (all) {
         case Center:
             x -= getW(str) / 2;
-            y -= curchar.pos.h / 2;
+            y -= (curchar.pos.h*fontscale) / 2;
 
             break;
         case Left:

@@ -3,10 +3,15 @@
 #include <vector>
 #include <cstdint>
 #include <string>
-#include "items.h"
 
 namespace Terraria {
 
+struct [[gnu::packed]] InternalItem {
+    int16_t itemid;
+    int16_t count;
+    uint8_t modifier;
+};
+    
 struct CharacterData {
     size_t headersize;
     uint8_t filenamelength;
@@ -21,7 +26,8 @@ public:
     void readFile(const char *path);
     void writeFile(const char *path);
     
-    CharacterData chardata;
+    CharacterData chardata; //in
+    CharacterData outdata; //out
    
 private:
     size_t filesize; //bytes

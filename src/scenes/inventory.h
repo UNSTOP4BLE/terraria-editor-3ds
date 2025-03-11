@@ -13,6 +13,9 @@ private:
     int selection;
     int scroll;
     std::vector<Terraria::Item> itemslist;
+    Terraria::Item curitem;
+    Terraria::Item curreplaceitem;
+    bool editing;
     GFX::SpriteSheet sprites;
     GFX::Sprite2D box_idle;
     GFX::Sprite2D box_hotbar;

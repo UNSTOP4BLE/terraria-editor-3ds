@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <citro2d.h>
+
 namespace Terraria {
     
 void LoadItemsList(const char *path, std::vector<Item> *itemslist) {
@@ -49,6 +50,16 @@ Item getItem(int itemid, std::vector<Item> &itemslist) {
     Item item = {0, "Unknown"};
     return item;
 }
+//very slow, should rewrite
+int getIndex(int itemid, CharacterData &data) {
+    for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
+        if (itemid == data.items[i].itemid) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 
 
 }

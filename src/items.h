@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "savefile.h"
 
 namespace Terraria {
 
@@ -12,12 +13,6 @@ constexpr int NUM_COIN_SLOTS = 4;
 constexpr int NUM_AMMO_SLOTS = 4;
 constexpr int INVENTORY_SLOT_SPACING = 49;
 
-struct [[gnu::packed]] InternalItem {
-    int16_t itemid;
-    int16_t count;
-    uint8_t modifier;
-};
-
 class Item {
 public:
     int id;
@@ -25,5 +20,6 @@ public:
 };
 void LoadItemsList(const char *path, std::vector<Item> *itemslist);
 Item getItem(int itemid, std::vector<Item> &itemslist);
+int getIndex(int itemid, CharacterData &data);
 
 }

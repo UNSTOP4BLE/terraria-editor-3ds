@@ -33,6 +33,8 @@ void SaveFileParser::readFile(const char *path) {
     fread(&chardata.coins, sizeof(chardata.coins), 1, f);
     // AMMO
     fread(&chardata.ammo, sizeof(chardata.ammo), 1, f);
+
+    outdata = chardata;
 }
 
 void SaveFileParser::writeFile(const char *path) {
@@ -52,16 +54,16 @@ void SaveFileParser::writeFile(const char *path) {
     fseek(fout, 0, SEEK_SET);
 
     // HEADER
-    fseek(fout, chardata.headersize, SEEK_CUR);
+    fseek(fout, outdata.headersize, SEEK_CUR);
 
     //inventory
 
     // ITEMS
-    fwrite(&chardata.items, sizeof(chardata.items), 1, fout);
+    fwrite(&outdata.items, sizeof(outdata.items), 1, fout);
     // COINS
-    fwrite(&chardata.coins, sizeof(chardata.coins), 1, fout);
+    fwrite(&outdata.coins, sizeof(outdata.coins), 1, fout);
     // AMMO
-    fwrite(&chardata.ammo, sizeof(chardata.ammo), 1, fout);
+    fwrite(&outdata.ammo, sizeof(outdata.ammo), 1, fout);
 
     fclose(fout);
 }
