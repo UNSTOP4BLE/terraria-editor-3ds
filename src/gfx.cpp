@@ -96,19 +96,27 @@ void FontManager::setScale(float scale) {
 int FontManager::getW(const char *str) {
     int c;
     int width = 0;
+    int maxwidth = 0;
     while ((c = *str++) != '\0')
     {
         //Shift and validate character
+        if (c == '\n') {
+            if (width > maxwidth)
+                maxwidth = width;
+            width = 0;
+            continue;
+        }
+
         if ((c -= 0x20) >= 0x60)
             continue;
             
         Sprite2D curchar = GFX::LoadSprite2D(fontsheet, c);
         C2D_SpriteSetCenter(&curchar.spr, 0, 0);
         curchar.scale(fontscale);
-        //Add width
+        //add width
         width += curchar.pos.w;
     }
-    return width;
+    return std::max(width, maxwidth);
 }
 
 void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...) {
@@ -129,7 +137,6 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
         case Center:
             x -= getW(str) / 2;
             y -= (curchar.pos.h*fontscale) / 2;
-
             break;
         case Left:
             break;
@@ -138,9 +145,18 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
             break;
     }
 
+    int scrw = 0;
+    if (screen == app->screens->top)
+        scrw = SCR_TOP_W;
+    else
+        scrw = SCR_BTM_W;
+    float xpos = x;
+    float wpos = getW(str);
+    if (xpos+wpos>scrw) {
+        fontscale = std::min((static_cast<float>(scrw)/static_cast<float>(wpos)), fontscale);
+    }
     int i = 0;      
-    while ((c = str[i++]) != '\0')
-    {
+    while ((c = str[i++]) != '\0') {
         curchar = GFX::LoadSprite2D(fontsheet, 0);
         curchar.scale(fontscale);
 
@@ -149,7 +165,6 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
             if (all == Center)
                 x -= getW(str) >> 1;
             y += curchar.pos.h;
-            y += 3;
             continue;
         }   
         //Shift and validate character
