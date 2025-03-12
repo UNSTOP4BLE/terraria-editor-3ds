@@ -8,6 +8,7 @@ InventoryScene::InventoryScene(void) {
     selection = 0;
     editing = false;
 	Terraria::LoadItemsList("romfs:/items.txt", &itemslist);
+	Terraria::LoadModifierList("romfs:/modifiers.txt", &modifierlist);
     sprites = C2D_SpriteSheetLoad("romfs:/inventory.t3x");
     box_idle = GFX::LoadSprite2D(sprites, 0);
     box_hotbar = GFX::LoadSprite2D(sprites, 1);
@@ -18,6 +19,10 @@ InventoryScene::InventoryScene(void) {
     scrollbar.setXY(311, 46);
     infopanel = GFX::LoadSprite2D(sprites, 6);
     infopanel.setXY(GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2);
+
+    itemsprites.push_back(C2D_SpriteSheetLoad("romfs:/items/items1.t3x"));
+    itemsprites.push_back(C2D_SpriteSheetLoad("romfs:/items/items2.t3x"));
+    itemsprites.push_back(C2D_SpriteSheetLoad("romfs:/items/items3.t3x"));
 
     //load save
     parser.readFile("romfs:/1.p");
@@ -32,23 +37,38 @@ float map_value(float value, float input_min, float input_max, float output_min,
     return (value - input_min) / (input_max - input_min) * (output_max - output_min) + output_min;
 }
 
+void scaleItem(GFX::Sprite2D &spr, int max) {
+    float newscale = 2;  // Start with the initial scale
+
+    float maxw = std::max(spr.pos.w, spr.pos.h);
+    // If scaling by 2 exceeds the max width, adjust the scale factor
+    if (static_cast<int>(maxw*newscale) > max) {
+        newscale = static_cast<float>(max) / maxw;
+    }
+
+    spr.scale(newscale);  // Apply the final calculated scale
+    
+	C2D_SpriteSetCenter(&spr.spr, 0.5, 0.5);
+}
+
 
 void InventoryScene::update(void) {
     selection = clamp(selection, 0, Terraria::NUM_INVENTORY_SLOTS - 1);
     
     // Handle directional input
     if (editing) {
-        int index = Terraria::getIndex(curreplaceitem.id, parser.outdata);
+        int index = selection;
         
-        if (Pad::Held(Pad::KEY_L)) //modifiers
+        if (Pad::Held(Pad::KEY_L) && parser.outdata.items[index].itemid > 0) //modifiers
         {
             if (Pad::Pressed(Pad::KEY_DLEFT))
                 parser.outdata.items[index].modifier -= 1;
             else if (Pad::Pressed(Pad::KEY_DRIGHT))
                 parser.outdata.items[index].modifier += 1;
+
         }
         else { //items
-            if (Pad::Pressed(Pad::KEY_DLEFT))
+            if (Pad::Pressed(Pad::KEY_DLEFT) && parser.outdata.items[index].itemid > -Terraria::NUM_NEGATIVE_IDS)
                 parser.outdata.items[index].itemid -= 1;
             else if (Pad::Pressed(Pad::KEY_DRIGHT))
                 parser.outdata.items[index].itemid += 1;
@@ -56,6 +76,12 @@ void InventoryScene::update(void) {
                 parser.outdata.items[index].count += 1;
             else if (Pad::Pressed(Pad::KEY_DDOWN))
                 parser.outdata.items[index].count -= 1;
+
+            if (parser.outdata.items[index].itemid == 0)
+            {
+                parser.outdata.items[index].modifier = 0;
+                parser.outdata.items[index].count = 0;
+            }
         }
         //todo
 //        if (Pad::Pressed(Pad::KEY_START))
@@ -108,19 +134,31 @@ void InventoryScene::draw(void) {
         }
     
         // Set the box based on selection and type
-        if (Pad::isTouching({xy[0]-((spacing-3)/2), xy[1]-((spacing-3)/2), spacing-3, spacing-3}))
+        if (!editing && Pad::isTouching({xy[0]-((spacing-3)/2), xy[1]-((spacing-3)/2), spacing-3, spacing-3}))
             selection = i;
         if (selection == i) {
             box_selected.setXY(xy[0], xy[1]);
             box_selected.draw(app->screens->bottom);
             curitem = Terraria::getItem(parser.chardata.items[i].itemid, itemslist);
+            curmod = Terraria::getModifier(parser.chardata.items[i].modifier, modifierlist);
             curreplaceitem = Terraria::getItem(parser.outdata.items[i].itemid, itemslist);
+            curreplacemod = Terraria::getModifier(parser.outdata.items[i].modifier, modifierlist);
             curindex = Terraria::getIndex(curitem.id, parser.chardata);
             curreplaceindex = Terraria::getIndex(curreplaceitem.id, parser.outdata);
+
         } else {
             auto& box = (i < Terraria::NUM_HOTBAR_SLOTS) ? box_hotbar : box_idle;
             box.setXY(xy[0], xy[1]);
             box.draw(app->screens->bottom);
+        }
+
+        //item sprite
+        if (parser.outdata.items[i].itemid != 0)
+        {
+            GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(parser.outdata.items[i].itemid, itemsprites), Terraria::getSpriteID(parser.outdata.items[i].itemid, itemsprites));
+            spr.setXY(xy[0], xy[1]);
+            scaleItem(spr, 40);
+            spr.draw(app->screens->bottom);
         }
     }
     //hider
@@ -137,8 +175,6 @@ void InventoryScene::draw(void) {
 
     //top screen
     infopanel.draw(app->screens->top);
-    app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Center, 80, 126, "Replace with:");
 
     int yoff = 0;
     //INVENTORY
@@ -151,31 +187,57 @@ void InventoryScene::draw(void) {
     else {
         //item name
         //todo print using modifier
-        app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s", curitem.item.c_str());
+        app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.chardata.items[curindex].modifier != 0 ? curmod.mod.c_str() : ""), (curitem.id != 0 ? curitem.item.c_str() : "Empty"));
 
         //item count and modifier
         app->fontManager.setScale(0.8);
-        app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nmodifier(%d)", parser.chardata.items[curindex].count, parser.chardata.items[curindex].modifier);
+        app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type: %s", parser.chardata.items[curindex].count, curmod.type.c_str());
 
         //item id
-        app->fontManager.setScale(0.8);
-        app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)", curitem.id);
+       // app->fontManager.setScale(0.8);
+       // app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmodifier(%d)", curitem.id, static_cast<int>(parser.chardata.items[curindex].modifier));
+
+        //item sprite
+        if (curitem.id != 0)
+        {
+            GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curitem.id, itemsprites), Terraria::getSpriteID(curitem.id, itemsprites));
+            spr.pos.x = 80;
+            spr.pos.y = 63;
+            scaleItem(spr, 100);
+            spr.draw(app->screens->top);
+        }
     }
     //REPLACING
     yoff = 118;
     //item name
-    //todo print using modifier
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s", curreplaceitem.item.c_str());
+    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
 
     //item count and modifier
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nmodifier(%d)", parser.outdata.items[curreplaceindex].count, parser.outdata.items[curreplaceindex].modifier);
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());
 
     //item id
+  //  app->fontManager.setScale(0.8);
+//    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmodifier(%d)", curreplaceitem.id, static_cast<int>(parser.outdata.items[curreplaceindex].modifier));
+
+    //item sprite
+    if (curreplaceitem.id != 0)
+    {
+        GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curreplaceitem.id, itemsprites), Terraria::getSpriteID(curreplaceitem.id, itemsprites));
+        spr.pos.x = 80;
+        spr.pos.y = 177;
+        scaleItem(spr, 100);
+        spr.draw(app->screens->top);
+    }
+
+    //text
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)", curreplaceitem.id);
+    app->fontManager.print(app->screens->top, GFX::Center, 80, 126, "Replace with:");
 }
 
 InventoryScene::~InventoryScene(void) {
 	C2D_SpriteSheetFree(sprites);
+    for (int i = 0; i < itemsprites.size(); i++)
+	    C2D_SpriteSheetFree(itemsprites[i]);
+
 }

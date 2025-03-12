@@ -42,8 +42,9 @@ void Sprite2D::setZ(float z) {
 }
 
 void Sprite2D::scale(float scale) {
-    pos.w *= scale;
-    pos.h *= scale;
+    C2D_SpriteScale(&spr, scale, scale);
+    pos.w = spr.params.pos.w;
+    pos.h = spr.params.pos.h;
 }
 
 void Sprite2D::setXY(int x, int y) {
