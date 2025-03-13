@@ -18,18 +18,15 @@ Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i) {
     ASSERTFUNC(_sprsheet, "sprite sheet doesnt exist");
     int cursprite = std::min(static_cast<int>(C2D_SpriteSheetCount(sprite.sprsheet))-1, i); //dont allow using a sprite that doesnt exist
 	C2D_SpriteFromSheet(&sprite.spr, sprite.sprsheet, cursprite);
+    sprite.spr.params.pos = {0, 0, static_cast<int>(sprite.spr.params.pos.w), static_cast<int>(sprite.spr.params.pos.h)};
 	C2D_SpriteSetCenter(&sprite.spr, 0.5, 0.5);
-    sprite.pos = {0, 0, static_cast<int>(sprite.spr.params.pos.w), static_cast<int>(sprite.spr.params.pos.h)};
+    sprite.pos = reinterpret_cast<FRect *>(&sprite.spr.params.pos);
     sprite.visible = true;
     
     return sprite;
 }
 
 void Sprite2D::draw(C3D_RenderTarget* screen) {
-    spr.params.pos.x = pos.x;
-    spr.params.pos.y = pos.y;
-    spr.params.pos.w = pos.w;
-    spr.params.pos.h = pos.h;
     if (visible)
     {
         C2D_SceneBegin(screen);
@@ -42,13 +39,13 @@ void Sprite2D::setZ(float z) {
 }
 
 void Sprite2D::scale(float scale) {
-    C2D_SpriteScale(&spr, scale, scale);
-    pos.w = spr.params.pos.w;
-    pos.h = spr.params.pos.h;
+    pos->w *= scale;
+    pos->h *= scale;
 }
 
-void Sprite2D::setXY(int x, int y) {
-    pos = {x, y, pos.w, pos.h};
+void Sprite2D::setXY(float x, float y) {
+    pos->x = x; 
+    pos->y = y;
 }
 
 void init(void) {
@@ -93,10 +90,10 @@ void FontManager::init(const char *path) {
 void FontManager::setScale(float scale) {
     fontscale = scale;
 }
-int FontManager::getW(const char *str) {
+float FontManager::getW(const char *str) {
     int c;
-    int width = 0;
-    int maxwidth = 0;
+    float width = 0;
+    float maxwidth = 0;
     while ((c = *str++) != '\0')
     {
         //Shift and validate character
@@ -114,14 +111,14 @@ int FontManager::getW(const char *str) {
         C2D_SpriteSetCenter(&curchar.spr, 0, 0);
         curchar.scale(fontscale);
         //add width
-        width += curchar.pos.w;
+        width += curchar.pos->w;
     }
-    return std::max(width, maxwidth);
+    return static_cast<float>(std::max(width, maxwidth));
 }
 
-void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...) {
+void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, const char *format, ...) {
     va_list list;
-    
+    x=0;
     char str[1024] = "";
 
     va_start(list, format);
@@ -130,18 +127,19 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
 
     Sprite2D curchar = GFX::LoadSprite2D(fontsheet, 0);
 
+    float strw = getW(str);
     //Draw string character by character
     int c;
-    int xhold = x;
+    float xhold = x;
     switch (all) {
         case Center:
-            x -= getW(str) / 2;
-            y -= (curchar.pos.h*fontscale) / 2;
+            x -= strw / 2;
+            y -= (curchar.pos->h) / 2;
             break;
         case Left:
             break;
         case Right:
-            x -= getW(str);
+            x -= strw;
             break;
     }
 
@@ -150,34 +148,32 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, int x, int y, const
         scrw = SCR_TOP_W;
     else
         scrw = SCR_BTM_W;
-    float xpos = x;
-    float wpos = getW(str);
-    if (xpos+wpos>scrw) {
-        fontscale = std::min((static_cast<float>(scrw)/static_cast<float>(wpos)), fontscale);
+    float maxscl = fontscale;
+    if (x+strw>scrw) {
+        float newscale = (static_cast<float>(scrw)/static_cast<float>(x+strw));
+        fontscale = std::min(newscale*maxscl, maxscl);
     }
+
     int i = 0;      
     while ((c = str[i++]) != '\0') {
-        curchar = GFX::LoadSprite2D(fontsheet, 0);
-        curchar.scale(fontscale);
-
-        if (c == '\n') {
-            x = xhold;
-            if (all == Center)
-                x -= getW(str) >> 1;
-            y += curchar.pos.h;
-            continue;
-        }   
+//        if (c == '\n') {
+  //          x = xhold;
+    //        if (all == Center)
+      //          x -= getW(str) / 2;
+       //     y += curchar.pos.h;
+        //    continue;
+        //}   
         //Shift and validate character
         if ((c -= 0x20) >= 0x60)
             continue;
         //Draw character
         curchar = GFX::LoadSprite2D(fontsheet, c);
-        curchar.scale(fontscale);
         C2D_SpriteSetCenter(&curchar.spr, 0, 0);
         curchar.setXY(x, y);
+        curchar.scale(fontscale);
         curchar.setZ(z);
         curchar.draw(screen);
-        x += curchar.pos.w;
+        x += curchar.pos->w;
     }
 
     z = 0;

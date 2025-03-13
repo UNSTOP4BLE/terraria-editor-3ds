@@ -40,7 +40,7 @@ float map_value(float value, float input_min, float input_max, float output_min,
 void scaleItem(GFX::Sprite2D &spr, int max) {
     float newscale = 2;  // Start with the initial scale
 
-    float maxw = std::max(spr.pos.w, spr.pos.h);
+    float maxw = std::max(spr.pos->w, spr.pos->h);
     // If scaling by 2 exceeds the max width, adjust the scale factor
     if (static_cast<int>(maxw*newscale) > max) {
         newscale = static_cast<float>(max) / maxw;
@@ -108,7 +108,7 @@ void InventoryScene::update(void) {
         scrollbar.setXY(311, clamp(pos.py, min, max));                                
         int spacing = Terraria::INVENTORY_SLOT_SPACING;
                                                                                                     //4 rows fit on the screen
-        scroll = map_value(scrollbar.pos.y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
+        scroll = map_value(scrollbar.pos->y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
     }
 }
 
@@ -168,7 +168,7 @@ void InventoryScene::draw(void) {
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
 
     char str[128];
-    sprintf(str, "%s, Press start to save file", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s, Press start to save filehjhjdhasdffdddffdfdsfsdfdsfsdh", (editing ? "Press X to select item" : "Press X to edit"));
 
     app->fontManager.setScale(0.6);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 10, str);
@@ -201,8 +201,7 @@ void InventoryScene::draw(void) {
         if (curitem.id != 0)
         {
             GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curitem.id, itemsprites), Terraria::getSpriteID(curitem.id, itemsprites));
-            spr.pos.x = 80;
-            spr.pos.y = 63;
+            spr.setXY(80, 63);
             scaleItem(spr, 100);
             spr.draw(app->screens->top);
         }
@@ -211,7 +210,6 @@ void InventoryScene::draw(void) {
     yoff = 118;
     //item name
     app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
-
     //item count and modifier
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());
@@ -224,8 +222,7 @@ void InventoryScene::draw(void) {
     if (curreplaceitem.id != 0)
     {
         GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curreplaceitem.id, itemsprites), Terraria::getSpriteID(curreplaceitem.id, itemsprites));
-        spr.pos.x = 80;
-        spr.pos.y = 177;
+        spr.setXY(80, 177);
         scaleItem(spr, 100);
         spr.draw(app->screens->top);
     }

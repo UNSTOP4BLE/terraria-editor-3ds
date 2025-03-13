@@ -11,6 +11,9 @@ constexpr int SCR_BTM_H = 240;
 struct Rect {
     int x,y,w,h;
 };
+struct FRect {
+    float x,y,w,h;
+};
 
 typedef C2D_SpriteSheet SpriteSheet;
 
@@ -26,9 +29,9 @@ public:
     void draw(C3D_RenderTarget* screen);
     void setZ(float z);
     void scale(float scale);
-    void setXY(int x, int y);
+    void setXY(float x, float y);
     bool visible;
-	Rect pos;
+	FRect *pos;
 	C2D_Sprite spr;
     C2D_SpriteSheet sprsheet; //sprite sheet pointer
 private:
@@ -49,17 +52,15 @@ enum Align
     Right
 };
 
-
 class FontManager {
 public:
     void init(const char *path);
     void setScale(float scale);
-    void print(C3D_RenderTarget* screen, Align all, int x, int y, const char *format, ...);
+    void print(C3D_RenderTarget* screen, Align all, float x, int y, const char *format, ...);
     void del(void);
     float z;
 private:
-    int getW(const char *str);
-    void printMSG(C3D_RenderTarget * screen, int x, int y, const char *str, Align all);
+    float getW(const char *str);
     C2D_SpriteSheet fontsheet;
     float fontscale;
 };
