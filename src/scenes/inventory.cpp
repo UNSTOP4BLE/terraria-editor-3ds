@@ -86,7 +86,8 @@ void InventoryScene::update(void) {
 
         if (Pad::Pressed(Pad::KEY_Y)) { //item name
             app->keyboard.open("Item name");
-            parser.outdata.items[index].itemid = getItemId(app->keyboard.getValue().c_str(), itemslist);
+            int id = getItemId(app->keyboard.getValue().c_str(), itemslist);
+            parser.outdata.items[index].itemid = id;
         }
         else if (Pad::Pressed(Pad::KEY_B)) {//item count        
             app->keyboard.openNum("Item amount");
@@ -94,7 +95,8 @@ void InventoryScene::update(void) {
         }
         else if (Pad::Pressed(Pad::KEY_R)) { //item modifier
             app->keyboard.open("Item modifier");
-            parser.outdata.items[index].modifier = getModifierId(app->keyboard.getValue().c_str(), modifierlist);
+            int id = getModifierId(app->keyboard.getValue().c_str(), modifierlist);
+            parser.outdata.items[index].modifier = id
         }
         //todo
 //        if (Pad::Pressed(Pad::KEY_START))
