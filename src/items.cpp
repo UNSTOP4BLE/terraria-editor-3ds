@@ -76,7 +76,7 @@ void LoadModifierList(const char *path, std::vector<Modifier> *itemslist) {
 
 //very slow, should rewrite
 Item getItem(int itemid, std::vector<Item> &itemslist) {
-    for (int i = 0; i < itemslist.size(); i++) {
+    for (int i = 0; i < static_cast<int>(itemslist.size()); i++) {
         if (itemid == itemslist[i].id) {
             Item item;
             item.id = itemid;
@@ -90,7 +90,7 @@ Item getItem(int itemid, std::vector<Item> &itemslist) {
 }
 
 Modifier getModifier(int id, std::vector<Modifier> &itemslist) {
-    for (int i = 0; i < itemslist.size(); i++) {
+    for (int i = 0; i < static_cast<int>(itemslist.size()); i++) {
         if (id == itemslist[i].id) {
             Modifier item;
             item.id = id;
@@ -107,7 +107,7 @@ Modifier getModifier(int id, std::vector<Modifier> &itemslist) {
 //very slow, should rewrite
 GFX::SpriteSheet getSprite(int itemid, std::vector<GFX::SpriteSheet> &spr) {
     int amount=0;
-    for (int i = 0; i < spr.size(); i++) {
+    for (int i = 0; i < static_cast<int>(spr.size()); i++) {
         auto curspr = spr[i];
         int sprcount = C2D_SpriteSheetCount(curspr);
         if (itemid-amount <= sprcount)
@@ -120,7 +120,7 @@ GFX::SpriteSheet getSprite(int itemid, std::vector<GFX::SpriteSheet> &spr) {
 int getSpriteID(int itemid, std::vector<GFX::SpriteSheet> &spr) {
     int amount=0;
     int id = 0;
-    for (int i = 0; i < spr.size(); i++) {
+    for (int i = 0; i < static_cast<int>(spr.size()); i++) {
         id=itemid;
         if (i == 0)
             id = itemid + NUM_NEGATIVE_IDS;

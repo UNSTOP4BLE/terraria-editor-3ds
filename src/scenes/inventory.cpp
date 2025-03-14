@@ -1,5 +1,6 @@
 #include "inventory.h"
 #include "../pad.h"
+#include <cstdint>
 #include <cstdio>
 
 InventoryScene::InventoryScene(void) {
@@ -40,7 +41,7 @@ float map_value(float value, float input_min, float input_max, float output_min,
 void scaleItem(GFX::Sprite2D &spr, int max) {
     float newscale = 2;  // Start with the initial scale
 
-    float maxw = std::max(spr.pos->w, spr.pos->h);
+    float maxw = std::max(spr.pos().w, spr.pos().h);
     // If scaling by 2 exceeds the max width, adjust the scale factor
     if (static_cast<int>(maxw*newscale) > max) {
         newscale = static_cast<float>(max) / maxw;
@@ -59,22 +60,21 @@ void InventoryScene::update(void) {
     if (editing) {
         int index = selection;
         
-        if (Pad::Held(Pad::KEY_L) && parser.outdata.items[index].itemid > 0) //modifiers
+        if (Pad::Held(Pad::KEY_L) && parser.outdata.items[index].itemid != 0) //modifiers
         {
-            if (Pad::Pressed(Pad::KEY_DLEFT))
+            if (Pad::Pressed(Pad::KEY_DLEFT) && parser.outdata.items[index].modifier > 0)
                 parser.outdata.items[index].modifier -= 1;
-            else if (Pad::Pressed(Pad::KEY_DRIGHT))
+            else if (Pad::Pressed(Pad::KEY_DRIGHT) && parser.outdata.items[index].modifier < modifierlist.size())
                 parser.outdata.items[index].modifier += 1;
-
         }
         else { //items
             if (Pad::Pressed(Pad::KEY_DLEFT) && parser.outdata.items[index].itemid > -Terraria::NUM_NEGATIVE_IDS)
                 parser.outdata.items[index].itemid -= 1;
-            else if (Pad::Pressed(Pad::KEY_DRIGHT))
+            else if (Pad::Pressed(Pad::KEY_DRIGHT) && index < static_cast<int>(itemslist.size()))
                 parser.outdata.items[index].itemid += 1;
-            else if (Pad::Pressed(Pad::KEY_DUP))
+            else if (Pad::Pressed(Pad::KEY_DUP) && parser.outdata.items[index].count < INT16_MAX)
                 parser.outdata.items[index].count += 1;
-            else if (Pad::Pressed(Pad::KEY_DDOWN))
+            else if (Pad::Pressed(Pad::KEY_DDOWN) && parser.outdata.items[index].count > 0)
                 parser.outdata.items[index].count -= 1;
 
             if (parser.outdata.items[index].itemid == 0)
@@ -108,7 +108,7 @@ void InventoryScene::update(void) {
         scrollbar.setXY(311, clamp(pos.py, min, max));                                
         int spacing = Terraria::INVENTORY_SLOT_SPACING;
                                                                                                     //4 rows fit on the screen
-        scroll = map_value(scrollbar.pos->y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
+        scroll = map_value(scrollbar.pos().y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
     }
 }
 
@@ -168,7 +168,7 @@ void InventoryScene::draw(void) {
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
 
     char str[128];
-    sprintf(str, "%s, Press start to save filehjhjdhasdffdddffdfdsfsdfdsfsdh", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s, Press start to save file", (editing ? "Press X to select item" : "Press X to edit"));
 
     app->fontManager.setScale(0.6);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 10, str);
@@ -187,15 +187,16 @@ void InventoryScene::draw(void) {
     else {
         //item name
         //todo print using modifier
+        app->fontManager.setScale(0.8);
         app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.chardata.items[curindex].modifier != 0 ? curmod.mod.c_str() : ""), (curitem.id != 0 ? curitem.item.c_str() : "Empty"));
 
         //item count and modifier
         app->fontManager.setScale(0.8);
-        app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type: %s", parser.chardata.items[curindex].count, curmod.type.c_str());
+        app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", parser.chardata.items[curindex].count, curmod.type.c_str());
 
         //item id
-       // app->fontManager.setScale(0.8);
-       // app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmodifier(%d)", curitem.id, static_cast<int>(parser.chardata.items[curindex].modifier));
+        app->fontManager.setScale(0.8);
+        app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", curitem.id, static_cast<int>(parser.chardata.items[curindex].modifier));
 
         //item sprite
         if (curitem.id != 0)
@@ -209,14 +210,15 @@ void InventoryScene::draw(void) {
     //REPLACING
     yoff = 118;
     //item name
+    app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
     //item count and modifier
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());
 
     //item id
-  //  app->fontManager.setScale(0.8);
-//    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmodifier(%d)", curreplaceitem.id, static_cast<int>(parser.outdata.items[curreplaceindex].modifier));
+    app->fontManager.setScale(0.8);
+    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", curreplaceitem.id, static_cast<int>(parser.outdata.items[curreplaceindex].modifier));
 
     //item sprite
     if (curreplaceitem.id != 0)
@@ -234,7 +236,7 @@ void InventoryScene::draw(void) {
 
 InventoryScene::~InventoryScene(void) {
 	C2D_SpriteSheetFree(sprites);
-    for (int i = 0; i < itemsprites.size(); i++)
+    for (int i = 0; i < static_cast<int>(itemsprites.size()); i++)
 	    C2D_SpriteSheetFree(itemsprites[i]);
 
 }

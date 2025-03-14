@@ -29,9 +29,11 @@ public:
     void draw(C3D_RenderTarget* screen);
     void setZ(float z);
     void scale(float scale);
+    inline FRect &pos(void) {
+        return *reinterpret_cast<FRect *>(&spr.params.pos);
+    }
     void setXY(float x, float y);
     bool visible;
-	FRect *pos;
 	C2D_Sprite spr;
     C2D_SpriteSheet sprsheet; //sprite sheet pointer
 private:

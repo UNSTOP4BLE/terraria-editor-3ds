@@ -21,7 +21,7 @@ file(
 
 add_executable(${PROJECT_NAME} ${sources})
 target_compile_features(${PROJECT_NAME} PRIVATE c_std_11 cxx_std_17)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wno-strict-aliasing)
 target_link_libraries(${PROJECT_NAME} PRIVATE -lcitro2d -lcitro3d -lctru -lm)
 
 #create t3x

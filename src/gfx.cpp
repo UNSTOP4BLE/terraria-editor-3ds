@@ -18,9 +18,8 @@ Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i) {
     ASSERTFUNC(_sprsheet, "sprite sheet doesnt exist");
     int cursprite = std::min(static_cast<int>(C2D_SpriteSheetCount(sprite.sprsheet))-1, i); //dont allow using a sprite that doesnt exist
 	C2D_SpriteFromSheet(&sprite.spr, sprite.sprsheet, cursprite);
-    sprite.spr.params.pos = {0, 0, static_cast<int>(sprite.spr.params.pos.w), static_cast<int>(sprite.spr.params.pos.h)};
+    sprite.spr.params.pos = {0, 0, sprite.spr.params.pos.w, sprite.spr.params.pos.h};
 	C2D_SpriteSetCenter(&sprite.spr, 0.5, 0.5);
-    sprite.pos = reinterpret_cast<FRect *>(&sprite.spr.params.pos);
     sprite.visible = true;
     
     return sprite;
@@ -39,13 +38,13 @@ void Sprite2D::setZ(float z) {
 }
 
 void Sprite2D::scale(float scale) {
-    pos->w *= scale;
-    pos->h *= scale;
+    pos().w *= scale;
+    pos().h *= scale;
 }
 
 void Sprite2D::setXY(float x, float y) {
-    pos->x = x; 
-    pos->y = y;
+    pos().x = x; 
+    pos().y = y;
 }
 
 void init(void) {
@@ -111,14 +110,13 @@ float FontManager::getW(const char *str) {
         C2D_SpriteSetCenter(&curchar.spr, 0, 0);
         curchar.scale(fontscale);
         //add width
-        width += curchar.pos->w;
+        width += curchar.pos().w;
     }
     return static_cast<float>(std::max(width, maxwidth));
 }
 
 void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, const char *format, ...) {
     va_list list;
-    x=0;
     char str[1024] = "";
 
     va_start(list, format);
@@ -134,7 +132,7 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, con
     switch (all) {
         case Center:
             x -= strw / 2;
-            y -= (curchar.pos->h) / 2;
+            y -= (curchar.pos().h / 2);
             break;
         case Left:
             break;
@@ -149,20 +147,24 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, con
     else
         scrw = SCR_BTM_W;
     float maxscl = fontscale;
-    if (x+strw>scrw) {
-        float newscale = (static_cast<float>(scrw)/static_cast<float>(x+strw));
+    auto available = scrw - x;
+    
+    float newscale = (available / strw);
+    if (newscale < 1.0f) {
         fontscale = std::min(newscale*maxscl, maxscl);
     }
 
     int i = 0;      
     while ((c = str[i++]) != '\0') {
-//        if (c == '\n') {
-  //          x = xhold;
-    //        if (all == Center)
-      //          x -= getW(str) / 2;
-       //     y += curchar.pos.h;
-        //    continue;
-        //}   
+        if (c == '\n') {
+            x = xhold;
+            if (all == Center)
+                x -= strw / 2;
+            else if (all == Right)
+                x -= strw;
+            y += curchar.pos().h;
+            continue;
+        }   
         //Shift and validate character
         if ((c -= 0x20) >= 0x60)
             continue;
@@ -173,7 +175,7 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, con
         curchar.scale(fontscale);
         curchar.setZ(z);
         curchar.draw(screen);
-        x += curchar.pos->w;
+        x += curchar.pos().w;
     }
 
     z = 0;
