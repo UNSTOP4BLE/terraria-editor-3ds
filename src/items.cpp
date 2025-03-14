@@ -1,7 +1,35 @@
 #include "items.h"
 #include "app.h"
 #include <cstdlib>
+#include <algorithm>
 #include <cstdio>
+#include <iostream>
+
+
+// Function to remove spaces from a string
+std::string removeSpaces(const std::string& str) {
+    std::string result;
+    for (char c : str) {
+        if (!std::isspace(c)) {
+            result += c;
+        }
+    }
+    return result;
+}
+
+// Function to convert string to lowercase
+std::string toLowerCase(const std::string& str) {
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) { return std::tolower(c); });
+    return result;
+}
+
+bool compareStrings(const std::string& str1, const std::string& str2) {
+    std::string modifiedStr1 = toLowerCase(removeSpaces(str1));
+    std::string modifiedStr2 = toLowerCase(removeSpaces(str2));
+
+    return modifiedStr1 == modifiedStr2;
+}
 
 namespace Terraria {
     
@@ -89,6 +117,31 @@ Item getItem(int itemid, std::vector<Item> &itemslist) {
     return item;
 }
 
+int getItemId(const char *item, std::vector<Item> &itemslist) {
+    //convert to lowercase
+    for (int i = 0; i < static_cast<int>(itemslist.size()); i++) {
+        if (compareStrings(itemslist[i].item, item)) {
+            return itemslist[i].id;
+        }
+    }
+    //doesnt exist
+    return 0;
+}
+
+int getModifierId(const char *item, std::vector<Modifier> &itemslist) {
+    //convert to lowercase
+    std::string item_l = item;
+    std::transform(item_l.begin(), item_l.end(), item_l.begin(), [](unsigned char c){ return std::tolower(c); });
+
+    for (int i = 0; i < static_cast<int>(itemslist.size()); i++) {
+        if (compareStrings(itemslist[i].mod, item)) {
+            return itemslist[i].id;
+        }
+    }
+    //doesnt exist
+    return 0;
+}
+
 Modifier getModifier(int id, std::vector<Modifier> &itemslist) {
     for (int i = 0; i < static_cast<int>(itemslist.size()); i++) {
         if (id == itemslist[i].id) {
@@ -104,7 +157,6 @@ Modifier getModifier(int id, std::vector<Modifier> &itemslist) {
     return item;
 }
 
-//very slow, should rewrite
 GFX::SpriteSheet getSprite(int itemid, std::vector<GFX::SpriteSheet> &spr) {
     int amount=0;
     for (int i = 0; i < static_cast<int>(spr.size()); i++) {

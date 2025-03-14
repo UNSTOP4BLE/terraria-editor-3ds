@@ -2,12 +2,14 @@
 
 #include "gfx.h"
 #include "scene.h"
+#include "keyboard.h"
 
 class Terraeditor
 {
 public:
     GFX::RenderScreens *screens;
     GFX::FontManager fontManager;
+    KeyBoard keyboard;
     Scene *currentScene;
     uint32_t clearcol;
 };

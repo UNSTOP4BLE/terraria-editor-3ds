@@ -83,6 +83,19 @@ void InventoryScene::update(void) {
                 parser.outdata.items[index].count = 0;
             }
         }
+
+        if (Pad::Pressed(Pad::KEY_Y)) { //item name
+            app->keyboard.open("Item name");
+            parser.outdata.items[index].itemid = getItemId(app->keyboard.getValue().c_str(), itemslist);
+        }
+        else if (Pad::Pressed(Pad::KEY_B)) {//item count        
+            app->keyboard.openNum("Item amount");
+            parser.outdata.items[index].count = clamp(atoi(app->keyboard.getValue().c_str()), 0, INT16_MAX);
+        }
+        else if (Pad::Pressed(Pad::KEY_R)) { //item modifier
+            app->keyboard.open("Item modifier");
+            parser.outdata.items[index].modifier = getModifierId(app->keyboard.getValue().c_str(), modifierlist);
+        }
         //todo
 //        if (Pad::Pressed(Pad::KEY_START))
   //          parser.writeFile();
@@ -168,7 +181,7 @@ void InventoryScene::draw(void) {
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
 
     char str[128];
-    sprintf(str, "%s, Press start to save file", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s", app->keyboard.getValue().c_str()); //, Press start to save file", (editing ? "Press X to select item" : "Press X to edit"));
 
     app->fontManager.setScale(0.6);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 10, str);
@@ -182,7 +195,7 @@ void InventoryScene::draw(void) {
         hider = {160, 0, 240, 117};
         GFX::drawRect(app->screens->top, hider, app->clearcol);
         app->fontManager.setScale(0.6);
-        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in itemid\nB: type in item count\nRT: type in item modifier id(todo make this name)");
+        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name\nB: type in item count\nRT: type in item modifier");
     }
     else {
         //item name
