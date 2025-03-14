@@ -41,7 +41,7 @@ foreach(input IN LISTS tex)
   add_custom_command(
     OUTPUT  "${output}"
     COMMAND tex3ds
-    ARGS -i "${PROJECT_SOURCE_DIR}/${input}" -o "${output}"
+    ARGS --border transparent -i "${PROJECT_SOURCE_DIR}/${input}" -o "${output}"
     DEPENDS "${PROJECT_SOURCE_DIR}/${input}"
     COMMENT "Building texture ${output}"
 )
