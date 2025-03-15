@@ -14,7 +14,7 @@ InventoryScene::InventoryScene(void) {
     trashButton.init("romfs:/trash.t3x");
     trashButton.pos().x = 30;
     trashButton.pos().y = 65;
-    restoreButton.init("romfs:/trash.t3x");
+    restoreButton.init("romfs:/restore.t3x");
     restoreButton.pos().x = 30;
     restoreButton.pos().y = 65+50;
 
@@ -106,7 +106,7 @@ void InventoryScene::update(void) {
             app->keyboard.open("Item modifier");
             const char *input = app->keyboard.getValue().c_str();
             if (strcmp(input, ""))
-                parser.outdata.items[index].itemid = Terraria::getModifierId(input, modifierlist);
+                parser.outdata.items[index].modifier = Terraria::getModifierId(input, modifierlist);
         }
         //todo
 //        if (Pad::Pressed(Pad::KEY_START))
