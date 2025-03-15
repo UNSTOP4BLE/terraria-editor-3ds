@@ -2,6 +2,7 @@
 #include "../pad.h"
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 
 InventoryScene::InventoryScene(void) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
@@ -86,8 +87,9 @@ void InventoryScene::update(void) {
 
         if (Pad::Pressed(Pad::KEY_Y)) { //item name
             app->keyboard.open("Item name");
-            int id = getItemId(app->keyboard.getValue().c_str(), itemslist);
-            parser.outdata.items[index].itemid = id;
+            const char *input = app->keyboard.getValue().c_str();
+            if (strcmp(input, ""))
+                parser.outdata.items[index].itemid = Terraria::getItemId(input, itemslist);
         }
         else if (Pad::Pressed(Pad::KEY_B)) {//item count        
             app->keyboard.openNum("Item amount");
@@ -95,8 +97,9 @@ void InventoryScene::update(void) {
         }
         else if (Pad::Pressed(Pad::KEY_R)) { //item modifier
             app->keyboard.open("Item modifier");
-            int id = getModifierId(app->keyboard.getValue().c_str(), modifierlist);
-            parser.outdata.items[index].modifier = id
+            const char *input = app->keyboard.getValue().c_str();
+            if (strcmp(input, ""))
+                parser.outdata.items[index].itemid = Terraria::getModifierId(input, modifierlist);
         }
         //todo
 //        if (Pad::Pressed(Pad::KEY_START))
