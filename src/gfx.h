@@ -8,11 +8,9 @@ constexpr int SCR_TOP_H = 240;
 constexpr int SCR_BTM_W = 320;
 constexpr int SCR_BTM_H = 240;
 
-struct Rect {
-    int x,y,w,h;
-};
-struct FRect {
-    float x,y,w,h;
+template<typename T> struct Rect {
+public:
+    T x, y, w, h;
 };
 
 typedef C2D_SpriteSheet SpriteSheet;
@@ -29,8 +27,8 @@ public:
     void draw(C3D_RenderTarget* screen);
     void setZ(float z);
     void scale(float scale);
-    inline FRect &pos(void) {
-        return *reinterpret_cast<FRect *>(&spr.params.pos);
+    inline Rect<float> &pos(void) {
+        return *reinterpret_cast<Rect<float> *>(&spr.params.pos);
     }
     void setXY(float x, float y);
     bool visible;
@@ -42,7 +40,7 @@ private:
 Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i);
 
 void init(void);
-void drawRect(C3D_RenderTarget* screen, Rect r, uint32_t col);
+void drawRect(C3D_RenderTarget* screen, Rect<int> r, uint32_t col);
 void clear(uint32_t col);
 void flip(void);
 void exit(void);

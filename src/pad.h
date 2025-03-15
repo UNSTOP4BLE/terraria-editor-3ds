@@ -32,5 +32,5 @@ namespace Pad {
     bool Held(int key);
     bool Pressed(int key);
     touchPosition GetTouchPos(void);
-    bool isTouching(GFX::Rect r);
+    bool isTouching(GFX::Rect<int> r);
 }

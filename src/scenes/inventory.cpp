@@ -11,15 +11,22 @@ InventoryScene::InventoryScene(void) {
     editing = false;
 	Terraria::LoadItemsList("romfs:/items.txt", &itemslist);
 	Terraria::LoadModifierList("romfs:/modifiers.txt", &modifierlist);
+    trashButton.init("romfs:/trash.t3x");
+    trashButton.pos().x = 30;
+    trashButton.pos().y = 65;
+    restoreButton.init("romfs:/trash.t3x");
+    restoreButton.pos().x = 30;
+    restoreButton.pos().y = 65+50;
+
     sprites = C2D_SpriteSheetLoad("romfs:/inventory.t3x");
     box_idle = GFX::LoadSprite2D(sprites, 0);
     box_hotbar = GFX::LoadSprite2D(sprites, 1);
     box_selected = GFX::LoadSprite2D(sprites, 2);
-    inventorypanel = GFX::LoadSprite2D(sprites, 4);
+    inventorypanel = GFX::LoadSprite2D(sprites, 3);
     inventorypanel.setXY(188, 137);
-    scrollbar = GFX::LoadSprite2D(sprites, 5);
+    scrollbar = GFX::LoadSprite2D(sprites, 4);
     scrollbar.setXY(311, 46);
-    infopanel = GFX::LoadSprite2D(sprites, 6);
+    infopanel = GFX::LoadSprite2D(sprites, 5);
     infopanel.setXY(GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2);
 
     itemsprites.push_back(C2D_SpriteSheetLoad("romfs:/items/items1.t3x"));
@@ -57,9 +64,9 @@ void scaleItem(GFX::Sprite2D &spr, int max) {
 void InventoryScene::update(void) {
     selection = clamp(selection, 0, Terraria::NUM_INVENTORY_SLOTS - 1);
     
+    int index = selection;
     // Handle directional input
     if (editing) {
-        int index = selection;
         
         if (Pad::Held(Pad::KEY_L) && parser.outdata.items[index].itemid != 0) //modifiers
         {
@@ -119,7 +126,7 @@ void InventoryScene::update(void) {
         editing = !editing;
 
     touchPosition pos = Pad::GetTouchPos();
-    GFX::Rect touchbar = {310, 46, 20, 230};
+    GFX::Rect<int> touchbar = {310, 46, 20, 230};
     if (Pad::isTouching(touchbar)) {
         int min = 46;
         int max = 230;
@@ -128,6 +135,15 @@ void InventoryScene::update(void) {
                                                                                                     //4 rows fit on the screen
         scroll = map_value(scrollbar.pos().y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
     }
+
+    //trash button
+    if (trashButton.pressed())
+        parser.outdata.items[index] = {0, 0, 0};
+
+    //restore button
+    if (restoreButton.pressed())
+        parser.outdata.items[index] = parser.chardata.items[index];
+
 }
 
 void InventoryScene::draw(void) {
@@ -180,16 +196,23 @@ void InventoryScene::draw(void) {
         }
     }
     //hider
-    GFX::Rect hider = {0, 0, GFX::SCR_BTM_W, 37};
+    GFX::Rect<int> hider = {0, 0, GFX::SCR_BTM_W, 37};
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
     hider = {0, GFX::SCR_BTM_H-2, GFX::SCR_BTM_W, 20};
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
 
     char str[128];
-    sprintf(str, "%s", app->keyboard.getValue().c_str()); //, Press start to save file", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s%s", "Press start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
 
     app->fontManager.setScale(0.6);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 10, str);
+
+    //trash button
+    trashButton.draw();
+
+    //restore button button
+    restoreButton.draw();
+
 
     //top screen
     infopanel.draw(app->screens->top);

@@ -26,7 +26,9 @@ namespace Pad {
     touchPosition GetTouchPos(void) {
         return touch;
     }
-    bool isTouching(GFX::Rect r) {
+    bool isTouching(GFX::Rect<int> r) {
+        if (touch.px == 0 && touch.py == 0)
+            return false;
         return (touch.px >= r.x && touch.py >= r.y && 
                 touch.px <= r.x+r.w && touch.py <= r.y+r.h);
     }

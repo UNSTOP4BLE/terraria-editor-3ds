@@ -57,7 +57,7 @@ void init(void) {
 
 }
 
-void drawRect(C3D_RenderTarget* screen, Rect r, uint32_t col) {
+void drawRect(C3D_RenderTarget* screen, Rect<int> r, uint32_t col) {
     C2D_SceneBegin(screen);
 	C2D_DrawRectangle(r.x, r.y, 0, r.w, r.h, col, col, col, col);
 

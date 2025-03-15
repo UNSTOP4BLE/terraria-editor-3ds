@@ -2,6 +2,7 @@
 #include "../app.h"
 #include "../savefile.h"
 #include "../items.h"
+#include "../uibutton.h"
 #include <vector>
 
 class InventoryScene : public Scene {
@@ -15,6 +16,8 @@ private:
     int scroll;
     std::vector<Terraria::Item> itemslist;
     std::vector<Terraria::Modifier> modifierlist;
+    UiButton trashButton;
+    UiButton restoreButton;
     Terraria::Item curitem;
     Terraria::Item curreplaceitem;
     Terraria::Modifier curmod;
