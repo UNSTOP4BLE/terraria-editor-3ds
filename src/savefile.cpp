@@ -29,11 +29,6 @@ void SaveFileParser::readFile(const char *path) {
     // ITEMS
     fread(&chardata.items, sizeof(chardata.items), 1, f);
 
-    // COINS
-    fread(&chardata.coins, sizeof(chardata.coins), 1, f);
-    // AMMO
-    fread(&chardata.ammo, sizeof(chardata.ammo), 1, f);
-
     outdata = chardata;
 }
 
@@ -60,10 +55,6 @@ void SaveFileParser::writeFile(const char *path) {
 
     // ITEMS
     fwrite(&outdata.items, sizeof(outdata.items), 1, fout);
-    // COINS
-    fwrite(&outdata.coins, sizeof(outdata.coins), 1, fout);
-    // AMMO
-    fwrite(&outdata.ammo, sizeof(outdata.ammo), 1, fout);
 
     fclose(fout);
 }

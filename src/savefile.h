@@ -16,9 +16,7 @@ struct CharacterData {
     size_t headersize;
     uint8_t filenamelength;
     char charname[13]; 
-    InternalItem items[50];
-    InternalItem coins[4];
-    InternalItem ammo[4];
+    InternalItem items[50+4+4];
 };
     
 class SaveFileParser {
