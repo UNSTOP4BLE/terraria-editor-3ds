@@ -5,15 +5,12 @@
 #include "savefile.h"
 #include "gfx.h"
 
-namespace Terraria {
+#define NUM_INVENTORY_ROWS 5
+#define NUM_HOTBAR_SLOTS 10
+#define NUM_NEGATIVE_IDS 48
+#define INVENTORY_SLOT_SPACING 3
 
-constexpr int NUM_INVENTORY_SLOTS = 50;
-constexpr int NUM_INVENTORY_ROWS = 5;
-constexpr int NUM_HOTBAR_SLOTS = 10;
-constexpr int NUM_COIN_SLOTS = 4;
-constexpr int NUM_AMMO_SLOTS = 4;
-constexpr int NUM_NEGATIVE_IDS = 48;
-constexpr int INVENTORY_SLOT_SPACING = 49;
+namespace Terraria {
 
 class Item {
 public:
