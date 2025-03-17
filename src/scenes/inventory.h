@@ -14,6 +14,7 @@ public:
 private:
     int selection;
     int scroll;
+    int max_scroll;
     std::vector<Terraria::Item> itemslist;
     std::vector<Terraria::Modifier> modifierlist;
     UiButton trashButton;

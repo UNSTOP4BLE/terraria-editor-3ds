@@ -7,6 +7,7 @@
 InventoryScene::InventoryScene(void) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     scroll = 0;
+    max_scroll = 0;
     selection = 0;
     editing = false;
 	Terraria::LoadItemsList("romfs:/items.txt", &itemslist);
@@ -62,7 +63,7 @@ void scaleItem(GFX::Sprite2D &spr, int max) {
 
 
 void InventoryScene::update(void) {
-    selection = clamp(selection, 0, NUM_INVENTORY_SLOTS - 1);
+    selection = clamp(selection, 0, NUM_TOTAL_SLOTS - 1);
     
     int index = selection;
     // Handle directional input
@@ -113,17 +114,20 @@ void InventoryScene::update(void) {
   //          parser.writeFile();
     }
     else {
-        if (Pad::Pressed(Pad::KEY_DLEFT) && selection % NUM_INVENTORY_ROWS != 0)
+        int rows = NUM_INVENTORY_ROWS;
+        if (selection > NUM_INVENTORY_SLOTS-1) //moved over to 4 slots
+            rows = 4;
+        if (Pad::Pressed(Pad::KEY_DLEFT) && selection % rows != 0) //start of row
             selection -= 1;
-        else if (Pad::Pressed(Pad::KEY_DRIGHT) && selection % NUM_INVENTORY_ROWS != NUM_INVENTORY_ROWS-1)
+        else if (Pad::Pressed(Pad::KEY_DRIGHT) && selection % rows != (rows-1)) //end of row
             selection += 1;
-        else if (Pad::Pressed(Pad::KEY_DUP) && selection >= NUM_INVENTORY_ROWS) {
-            selection -= 5;
-            scroll -= 46;
+        else if (Pad::Pressed(Pad::KEY_DUP) && selection >= rows) { //start of selection
+            selection -= rows;
+            scroll -= 46+INVENTORY_SLOT_SPACING;
         }
-        else if (Pad::Pressed(Pad::KEY_DDOWN) && selection + NUM_INVENTORY_ROWS < NUM_INVENTORY_SLOTS) {
-            selection += 5;
-            scroll += 46;
+        else if (Pad::Pressed(Pad::KEY_DDOWN) && (selection + rows) < NUM_TOTAL_SLOTS) { //end of selection
+            selection += rows;
+            scroll += 46+INVENTORY_SLOT_SPACING;
         }
     }
     if (Pad::Pressed(Pad::KEY_X))
@@ -134,10 +138,9 @@ void InventoryScene::update(void) {
     if (Pad::isTouching(touchbar)) {
         int min = 46;
         int max = 230;
-        scrollbar.setXY(311, clamp(pos.py, min, max));                                
- //       int spacing = Terraria::INVENTORY_SLOT_SPACING;
-                                                                                                    //4 rows fit on the screen
-   //     scroll = map_value(scrollbar.pos().y, min, max, 0, (Terraria::NUM_INVENTORY_SLOTS/5)*spacing - 4*spacing);
+        scrollbar.setXY(311, clamp(pos.py, min, max));                 
+
+        scroll = map_value(scrollbar.pos().y, min, max, 0, max_scroll);
     }
 
     //trash button
@@ -161,47 +164,65 @@ void InventoryScene::draw(void) {
     int curindex = 0;
     int curreplaceindex = 0;
     int spacing = 0;
+    int offset = 0;
 
     for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
         if (i == NUM_INVENTORY_SLOTS) {
-            spacing = 1;
+            spacing = 1;    
+            offset = NUM_INVENTORY_SLOTS;
         }
         // Update position based on the index (i)
-        if (i % (NUM_INVENTORY_ROWS-spacing) == 0 && i != 0) {
-            pos.x = initx;  // Reset to initial x
-            pos.y += pos.h+INVENTORY_SLOT_SPACING; // Move down
-        } else if (i != 0) {
-            pos.x += pos.w+INVENTORY_SLOT_SPACING; // Move right
+        if (i != 0) {
+            if ((i-offset) % (NUM_INVENTORY_ROWS-spacing) == 0) {
+                pos.x = initx;  // Reset to initial x
+                pos.y += pos.h+INVENTORY_SLOT_SPACING; // Move down
+                if (i >= NUM_INVENTORY_SLOTS) {
+                    switch (i-NUM_INVENTORY_SLOTS) {
+                        case 0: //coins
+                            app->fontManager.setScale(1.2);
+                            app->fontManager.print(app->screens->bottom, GFX::Left, pos.x-10, pos.y-15, "Coins:");
+                            break;
+                        case NUM_AMMO_SLOTS: //ammo
+                            app->fontManager.setScale(1.2);
+                            app->fontManager.print(app->screens->bottom, GFX::Left, pos.x-10, pos.y-15, "Ammo:");
+                            break;
+                    }
+                    pos.y += pos.h+INVENTORY_SLOT_SPACING; // Move down   
+                }
+            } 
+            else
+                pos.x += pos.w+INVENTORY_SLOT_SPACING; // Move right
+            
+            
         }
-    
         // Set the box based on selection and type
-//        if (!editing && Pad::isTouching({xy[0]-((spacing-3)/2), xy[1]-((spacing-3)/2), spacing-3, spacing-3}))
-  //          selection = i;
-        //if (selection == i) {
-            //box_selected.setXY(xy[0], xy[1]);
-           // box_selected.draw(app->screens->bottom);
-          //  curitem = Terraria::getItem(parser.chardata.items[i].itemid, itemslist);
-         //   curmod = Terraria::getModifier(parser.chardata.items[i].modifier, modifierlist);
-        //    curreplaceitem = Terraria::getItem(parser.outdata.items[i].itemid, itemslist);
-       //     curreplacemod = Terraria::getModifier(parser.outdata.items[i].modifier, modifierlist);
-      //      curindex = Terraria::getIndex(curitem.id, parser.chardata);
-    //        curreplaceindex = Terraria::getIndex(curreplaceitem.id, parser.outdata);
+        if (!editing && Pad::isTouching({pos.x-pos.w/2, pos.y-pos.h/2, pos.w, pos.h}))
+            selection = i;
+        if (selection == i) {
+            box_selected.setXY(pos.x, pos.y);
+            box_selected.draw(app->screens->bottom);
+            curitem = Terraria::getItem(parser.chardata.items[i].itemid, itemslist);
+            curmod = Terraria::getModifier(parser.chardata.items[i].modifier, modifierlist);
+            curreplaceitem = Terraria::getItem(parser.outdata.items[i].itemid, itemslist);
+            curreplacemod = Terraria::getModifier(parser.outdata.items[i].modifier, modifierlist);
+            curindex = Terraria::getIndex(curitem.id, parser.chardata);
+            curreplaceindex = Terraria::getIndex(curreplaceitem.id, parser.outdata);
 
-        //} 
-//        else {
+        } 
+        else {
             auto& box = (i < NUM_HOTBAR_SLOTS) ? box_hotbar : box_idle;
             box.setXY(pos.x, pos.y);
             box.draw(app->screens->bottom);
-  //      }
+        }
 
         //item sprite
-//        if (parser.outdata.items[i].itemid != 0)
- //       {
-   //         GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(parser.outdata.items[i].itemid, itemsprites), Terraria::getSpriteID(parser.outdata.items[i].itemid, itemsprites));
-    //        spr.setXY(xy[0], xy[1]);
-     //       scaleItem(spr, 40);
-      //      spr.draw(app->screens->bottom);
-        //}
+        if (parser.outdata.items[i].itemid != 0)
+        {
+            GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(parser.outdata.items[i].itemid, itemsprites), Terraria::getSpriteID(parser.outdata.items[i].itemid, itemsprites));
+            spr.setXY(pos.x, pos.y);
+            scaleItem(spr, 40);
+            spr.draw(app->screens->bottom);
+        }
     }
     //hider
     GFX::Rect<int> hider = {0, 0, GFX::SCR_BTM_W, 37};
