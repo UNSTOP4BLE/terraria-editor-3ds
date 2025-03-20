@@ -47,8 +47,8 @@ float map_value(float value, float input_min, float input_max, float output_min,
     return (value - input_min) / (input_max - input_min) * (output_max - output_min) + output_min;
 }
 
-void scaleItem(GFX::Sprite2D &spr, int max) {
-    float newscale = 2;  // Start with the initial scale
+void scaleItem(GFX::Sprite2D &spr, float scl, int max) {
+    float newscale = scl;  // Start with the initial scale
 
     float maxw = std::max(spr.pos().w, spr.pos().h);
     // If scaling by 2 exceeds the max width, adjust the scale factor
@@ -220,7 +220,7 @@ void InventoryScene::draw(void) {
         {
             GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(parser.outdata.items[i].itemid, itemsprites), Terraria::getSpriteID(parser.outdata.items[i].itemid, itemsprites));
             spr.setXY(pos.x, pos.y);
-            scaleItem(spr, 40);
+            scaleItem(spr, 1, 40);
             spr.draw(app->screens->bottom);
         }
     }
@@ -273,7 +273,7 @@ void InventoryScene::draw(void) {
         {
             GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curitem.id, itemsprites), Terraria::getSpriteID(curitem.id, itemsprites));
             spr.setXY(80, 63);
-            scaleItem(spr, 100);
+            scaleItem(spr, 2, 100);
             spr.draw(app->screens->top);
         }
     }
@@ -295,7 +295,7 @@ void InventoryScene::draw(void) {
     {
         GFX::Sprite2D spr = GFX::LoadSprite2D(Terraria::getSprite(curreplaceitem.id, itemsprites), Terraria::getSpriteID(curreplaceitem.id, itemsprites));
         spr.setXY(80, 177);
-        scaleItem(spr, 100);
+        scaleItem(spr, 2, 100);
         spr.draw(app->screens->top);
     }
 
