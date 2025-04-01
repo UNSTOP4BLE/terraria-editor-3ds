@@ -1,7 +1,7 @@
 #include "disclamer.h"
 #include "../app.h"
 #include "../pad.h"
-#include "inventory.h"
+#include "fileselection.h"
 
 DisclamerScene::DisclamerScene(void) {
     setSceneCol(C2D_Color32(0, 0, 0, 255));
@@ -9,7 +9,7 @@ DisclamerScene::DisclamerScene(void) {
 
 void DisclamerScene::update(void) {
     if (app->elapsed >= 3 || Pad::Pressed(Pad::KEY_A))
-        setScene(new InventoryScene());
+        setScene(new SelectionScene());
 }
 
 void DisclamerScene::draw(void) {

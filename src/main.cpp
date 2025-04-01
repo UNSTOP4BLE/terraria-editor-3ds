@@ -3,6 +3,7 @@
 #include "gfx.h"
 #include "pad.h"
 #include "scenes/disclamer.h"
+#include "fslib/FsLib.hpp"
 #include <chrono>
 
 Terraeditor *app;
@@ -25,7 +26,10 @@ int main(void) {
 	app->elapsed = 0;
 	GFX::init();
 	app->fontManager.init("romfs:/font/font.t3x");
-	
+	FsLib::Initialize();
+	FsLib::Dev::InitializeSDMC();
+    FsLib::OpenExtData(u"extdata", 0x000016A6);
+
     setScene(new DisclamerScene());
 
 	std::chrono::time_point<std::chrono::system_clock> start = std::chrono::high_resolution_clock::now();
@@ -46,6 +50,7 @@ int main(void) {
 
 	// Deinit libs
 	romfsExit();
+    FsLib::Exit();
 	GFX::exit();
 	app->fontManager.del();
 	delete app;

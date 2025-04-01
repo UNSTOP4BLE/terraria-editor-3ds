@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cstring>
 
-InventoryScene::InventoryScene(void) {
+InventoryScene::InventoryScene(std::u16string path) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     scroll = 0;
     max_scroll = 0;
@@ -35,7 +35,7 @@ InventoryScene::InventoryScene(void) {
     itemsprites.push_back(C2D_SpriteSheetLoad("romfs:/items/items3.t3x"));
 
     //load save
-    parser.readFile("romfs:/1.p");
+    parser.readFile(path.c_str());
 }
 
 int clamp(int d, int min, int max) {
@@ -281,7 +281,7 @@ void InventoryScene::draw(void) {
     yoff = 118;
     //item name
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
+    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s", parser.chardata.charname.c_str());//%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
     //item count and modifier
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());

@@ -7,7 +7,7 @@
 
 class InventoryScene : public Scene {
 public:
-    InventoryScene(void);
+    InventoryScene(std::u16string path);
     void update(void);
     void draw(void);
     ~InventoryScene(void); 
