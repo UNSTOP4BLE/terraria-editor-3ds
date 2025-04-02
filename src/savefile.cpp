@@ -1,5 +1,7 @@
 #include "savefile.h"
 #include "app.h"
+#include "fslib/File.hpp"
+#include "fslib/FileFunctions.hpp"
 #include "fslib/FsLib.hpp"
 #include <cstdint>
 #include <cstdio>
@@ -107,50 +109,54 @@ void SaveFileParser::readFile(const char16_t*path) {
     filesize = f.GetSize();
 
     // HEADER
-    f.Seek(0x2, f.Tell());
+    f.Seek(0x2, FsLib::File::Beginning);
     chardata.filenamelength = f.GetCharacter();
-    f.Seek(0x3, f.Tell());
+    f.Seek(0x3, FsLib::File::Current);
     char16_t filename_utf16[13];
-    f.Read(&filename_utf16, chardata.filenamelength);
-    //dont work
+    for (int i = 0; i < chardata.filenamelength; i++)
+        f.Read(&filename_utf16[i], sizeof(char16_t));
+
     chardata.charname = utf16_to_utf8(filename_utf16);
-    if (chardata.charname == "sviki") {
-        while (1) {}
-    }
-    f.Seek(0x46, f.Tell());
+    f.Seek(0x46, FsLib::File::Current);
 
     chardata.headersize = f.Tell();
     // ITEMS
     f.Read(&chardata.items, sizeof(chardata.items));
-
+    f.Close();
     outdata = chardata;
 }
 
 void SaveFileParser::writeFile(const char *path) {
-    FILE *fout = fopen(path,"wb");  
-    FILE *fin = fopen(inputpath.c_str(),"rb"); 
+    FsLib::File fin(utf8_to_utf16(inputpath), FS_OPEN_READ);
 
-    ASSERTFUNC(fin, "failed to open file");
-    ASSERTFUNC(fout, "failed to open file");
-
+    ASSERTFUNC(fin.IsOpen(), "failed to open input file");
     
     uint8_t indata[filesize];
 
     //copy over the original file
-    fread(&indata, filesize, 1, fin); 
-    fwrite(indata, filesize, 1, fout);
-    fclose(fin);
-    fseek(fout, 0, SEEK_SET);
+    fin.Read(&indata, filesize); 
+    fin.Close();
+
+    ASSERTFUNC(FsLib::DeleteFile(utf8_to_utf16(path)), "failed to replace file");
+    ASSERTFUNC(FsLib::CreateFile(utf8_to_utf16(path), filesize), "failed to replace file");
+    
+    FsLib::File fout(utf8_to_utf16(path), FS_OPEN_WRITE);
+
+    ASSERTFUNC(fout.IsOpen(), "failed to open output file");
+    fout.Write(indata, filesize);
+    fout.Seek(0, FsLib::File::Beginning);
 
     // HEADER
-    fseek(fout, outdata.headersize, SEEK_CUR);
+    fout.Seek(outdata.headersize, FsLib::File::Current);
 
     //inventory
 
     // ITEMS
-    fwrite(&outdata.items, sizeof(outdata.items), 1, fout);
+    fout.Write(&outdata.items, sizeof(outdata.items));
 
-    fclose(fout);
+    fout.Close();
+    ASSERTFUNC(!fout.IsOpen(), "failed to write output file");
+    
 }
 
 }

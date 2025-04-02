@@ -109,9 +109,6 @@ void InventoryScene::update(void) {
             if (strcmp(input, ""))
                 parser.outdata.items[index].modifier = Terraria::getModifierId(input, modifierlist);
         }
-        //todo
-//        if (Pad::Pressed(Pad::KEY_START))
-  //          parser.writeFile();
     }
     else {
         int rows = NUM_INVENTORY_ROWS;
@@ -151,6 +148,9 @@ void InventoryScene::update(void) {
     if (restoreButton.pressed())
         parser.outdata.items[index] = parser.chardata.items[index];
 
+    //save edited file
+    if (Pad::Pressed(Pad::KEY_START))
+        parser.writeFile(parser.inputpath.c_str()); //overwrite
 }
 
 void InventoryScene::draw(void) {

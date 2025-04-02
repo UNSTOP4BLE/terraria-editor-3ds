@@ -35,10 +35,9 @@ public:
     
     CharacterData chardata; //in
     CharacterData outdata; //out
-   
-private:
-    size_t filesize; //bytes
     std::string inputpath;
+    size_t filesize; //bytes
+   
 };
     
 

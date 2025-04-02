@@ -83,6 +83,7 @@ void FsLib::File::Close(void)
 {
     if (m_IsOpen)
     {
+        m_IsOpen = false;
         FSFILE_Close(m_FileHandle);
     }
 }
