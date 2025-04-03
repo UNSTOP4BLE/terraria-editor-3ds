@@ -1,5 +1,7 @@
 #include "inventory.h"
 #include "../pad.h"
+#include "fileselection.h"
+#include "saving.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -147,10 +149,28 @@ void InventoryScene::update(void) {
     //restore button
     if (restoreButton.pressed())
         parser.outdata.items[index] = parser.chardata.items[index];
+    //exit
+    if (Pad::Pressed(Pad::KEY_B))
+        setScene(new SelectionScene());
 
     //save edited file
     if (Pad::Pressed(Pad::KEY_START))
+    {
+//        if (Pad::Pressed(Pad::KEY_START)) {
+ //           for (int time = 49; time < 60; time++)
+   //         {
+     //           for (int i = 0; i < 58; i++)
+       //             parser.outdata.items[i] = {i+(time*58)+1, 1, 0};
+         //       char pathy[64];
+
+            //    sprintf(pathy, "extdata:/v2/%d.p", time+2);
+          //      parser.writeFile(pathy); //overwrite
+            //}
+        
+        //}
         parser.writeFile(parser.inputpath.c_str()); //overwrite
+        setScene(new SavingScene());
+    }
 }
 
 void InventoryScene::draw(void) {
@@ -231,15 +251,15 @@ void InventoryScene::draw(void) {
     GFX::drawRect(app->screens->bottom, hider, app->clearcol);
 
     char str[128];
-    sprintf(str, "%s%s", "Press start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s%s\nPress B to exit without saving", "Press Start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
 
-    app->fontManager.setScale(0.6);
-    app->fontManager.print(app->screens->bottom, GFX::Left, 20, 10, str);
+    app->fontManager.setScale(0.5);
+    app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
 
     //trash button
     trashButton.draw();
 
-    //restore button button
+    //restore button
     restoreButton.draw();
 
 
@@ -256,7 +276,6 @@ void InventoryScene::draw(void) {
     }
     else {
         //item name
-        //todo print using modifier
         app->fontManager.setScale(0.8);
         app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (parser.chardata.items[curindex].modifier != 0 ? curmod.mod.c_str() : ""), (curitem.id != 0 ? curitem.item.c_str() : "Empty"));
 
@@ -281,7 +300,7 @@ void InventoryScene::draw(void) {
     yoff = 118;
     //item name
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s", parser.chardata.charname.c_str());//%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
+    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s", (parser.outdata.items[curreplaceindex].modifier != 0 ? curreplacemod.mod.c_str() : ""), (curreplaceitem.id != 0 ? curreplaceitem.item.c_str() : "Empty"));
     //item count and modifier
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", parser.outdata.items[curreplaceindex].count, curreplacemod.type.c_str());

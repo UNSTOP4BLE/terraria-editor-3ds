@@ -137,7 +137,8 @@ void SaveFileParser::writeFile(const char *path) {
     fin.Read(&indata, filesize); 
     fin.Close();
 
-    ASSERTFUNC(FsLib::DeleteFile(utf8_to_utf16(path)), "failed to replace file");
+    if (FsLib::FileExists(utf8_to_utf16(path)))
+        ASSERTFUNC(FsLib::DeleteFile(utf8_to_utf16(path)), "failed to replace file");
     ASSERTFUNC(FsLib::CreateFile(utf8_to_utf16(path), filesize), "failed to replace file");
     
     FsLib::File fout(utf8_to_utf16(path), FS_OPEN_WRITE);
