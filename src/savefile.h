@@ -16,9 +16,9 @@ std::u16string utf8_to_utf16(const std::string& utf8_str);
 namespace Terraria {
 
 struct [[gnu::packed]] InternalItem {
-    int16_t itemid;
+    int16_t id;
     int16_t count;
-    uint8_t modifier;
+    uint8_t mod;
 };
     
 struct CharacterData {

@@ -12,20 +12,10 @@ public:
     void draw(void);
     ~InventoryScene(void); 
 private:
-    int selection;
-    int scroll;
-    int max_scroll;
-    std::vector<Terraria::Item> itemslist;
-    std::vector<Terraria::Modifier> modifierlist;
     UiButton trashButton;
     UiButton restoreButton;
-    Terraria::Item curitem;
-    Terraria::Item curreplaceitem;
-    Terraria::Modifier curmod;
-    Terraria::Modifier curreplacemod;
     bool editing;
     GFX::SpriteSheet sprites;
-    std::vector<GFX::SpriteSheet> itemsprites;
     GFX::Sprite2D box_idle;
     GFX::Sprite2D box_hotbar;
     GFX::Sprite2D box_selected;
