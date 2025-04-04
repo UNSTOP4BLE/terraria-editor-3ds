@@ -10,6 +10,7 @@ public:
         return sprite.pos();
     }
     void draw(void);
+    void free(void);
 private:
     GFX::Sprite2D sprite;
     GFX::SpriteSheet sheet;

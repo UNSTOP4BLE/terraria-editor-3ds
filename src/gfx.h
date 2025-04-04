@@ -13,6 +13,18 @@ public:
     T x, y, w, h;
 };
 
+template<typename T> struct XY {
+public:
+    T x, y;
+};
+
+enum Align
+{   
+    Center,
+    Left,
+    Right
+};
+
 typedef C2D_SpriteSheet SpriteSheet;
 
 class RenderScreens {
@@ -37,20 +49,18 @@ public:
 private:
 };
 
-Sprite2D LoadSprite2D(C2D_SpriteSheet _sprsheet, int i);
+C2D_Image loadTex(const char *path);
+void freeTex(C2D_Image *img);
+XY<int> getTexWH(C2D_Image &img);
+void drawTexXY(C2D_Image &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all);
+void drawTex(C2D_Image &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all);
+Sprite2D loadSprite2D(C2D_SpriteSheet _sprsheet, int i);
 
 void init(void);
 void drawRect(C3D_RenderTarget* screen, Rect<int> r, uint32_t col);
 void clear(uint32_t col);
 void flip(void);
 void exit(void);
-
-enum Align
-{   
-    Center,
-    Left,
-    Right
-};
 
 class FontManager {
 public:

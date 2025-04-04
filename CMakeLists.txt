@@ -11,7 +11,6 @@ file(
     DESTINATION "${PROJECT_BINARY_DIR}/assets" NO_SOURCE_PERMISSIONS
     PATTERN     "SOURCE_FILES" EXCLUDE
     PATTERN     "*.t3s" EXCLUDE
-    PATTERN     "*.png" EXCLUDE
 )
 file(
     GLOB_RECURSE sources

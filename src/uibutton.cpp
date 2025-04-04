@@ -5,7 +5,7 @@
 
 void UiButton::init(const char *path) {
     sheet = C2D_SpriteSheetLoad(path);
-    sprite = GFX::LoadSprite2D(sheet, pressed());
+    sprite = GFX::loadSprite2D(sheet, pressed());
 }
 
 bool UiButton::pressed(void) {
@@ -16,7 +16,11 @@ bool UiButton::pressed(void) {
 
 void UiButton::draw(void) {
     auto r = sprite.pos();
-    sprite = GFX::LoadSprite2D(sheet, pressed());
+    sprite = GFX::loadSprite2D(sheet, pressed());
     sprite.pos() = r;
     sprite.draw(app->screens->bottom);
+}
+
+void UiButton::free(void) {
+    C2D_SpriteSheetFree(sheet);
 }

@@ -1,8 +1,0 @@
---atlas -f rgba8888 -z auto
-
-idle.png
-hotbar.png
-selected.png
-inv.png
-scrollbar.png
-top_panel.png

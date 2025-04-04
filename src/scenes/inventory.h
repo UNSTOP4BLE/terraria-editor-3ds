@@ -12,15 +12,17 @@ public:
     void draw(void);
     ~InventoryScene(void); 
 private:
+    void printItemInfo(int yoff);
+    void changeItem(int id);
+    float scaleItem(GFX::XY<int> wh, float scl, int max);
+
     UiButton trashButton;
     UiButton restoreButton;
     bool editing;
-    GFX::SpriteSheet sprites;
-    GFX::Sprite2D box_idle;
-    GFX::Sprite2D box_hotbar;
-    GFX::Sprite2D box_selected;
-    GFX::Sprite2D inventorypanel;
-    GFX::Sprite2D scrollbar;
-    GFX::Sprite2D infopanel;
     Terraria::SaveFileParser parser;
+
+    C2D_Image tex_invpanel;
+    C2D_Image tex_scroll;
+    C2D_Image tex_infopanel;
+    C2D_Image tex_curitem;
 };
