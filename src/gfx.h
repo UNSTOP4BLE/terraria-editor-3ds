@@ -58,7 +58,7 @@ public:
 };
 
 Tex loadTex(const char *path);
-void freeTex(Tex &img);
+void freeTex(Tex *img);
 XY<int> getTexWH(Tex &img);
 void drawTexXY(Tex &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all);
 void drawTex(Tex &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all);

@@ -99,8 +99,10 @@ Tex loadTex(const char *path) {
     Tex img;
     int w, h, c;
     uint8_t *buffer = static_cast<uint8_t *>(stbi_load(path, &w, &h, &c, 4));
-      
-    ASSERTFUNC(buffer, "failed to load image");
+    
+    char msg[128];
+    sprintf(msg, "failed to load image %s", path);
+    ASSERTFUNC(buffer, msg);
     ASSERTFUNC(!(w > 1024 || h > 1024), "loaded image too big");
           
     C3D_Tex *tex = new C3D_Tex;
@@ -113,12 +115,10 @@ Tex loadTex(const char *path) {
     return img;
 }
 
-void freeTex(Tex &img) {
-    if (img.open)
-    {
-        delete img.tex.tex;
-        delete img.tex.subtex;
-        img.open = false;
+void freeTex(Tex *img) {
+    if (img->open) {
+        C3D_TexDelete(img->tex.tex);
+        img->open = false;
     }
 }
 

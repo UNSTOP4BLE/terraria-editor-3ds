@@ -10,7 +10,7 @@ void UiButton::init(const char *path) {
 
 bool UiButton::pressed(void) {
     //very bad, hardcoded to center of the sprite
-    GFX::Rect<int> r = {static_cast<int>(pos().x)-static_cast<int>(pos().w)/2, static_cast<int>(pos().y)-static_cast<int>(pos().h)/2, static_cast<int>(pos().w), static_cast<int>(pos().h)};
+    GFX::Rect<int> r = {static_cast<int>(pos().x), static_cast<int>(pos().y), static_cast<int>(pos().w), static_cast<int>(pos().h)};
     return Pad::isTouching(r);
 }
 

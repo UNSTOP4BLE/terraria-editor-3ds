@@ -10,25 +10,40 @@
 InventoryScene::InventoryScene(std::u16string path) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     editing = false;
+    selecteditem = 0;
 
     trashButton.init("romfs:/trash.t3x");
-    trashButton.pos().x = 9;
-    trashButton.pos().y = 44;
+    trashButton.pos() = {9, 44, trashButton.pos().w, trashButton.pos().h};
     
     restoreButton.init("romfs:/restore.t3x");
-    restoreButton.pos().x = 9;
-    restoreButton.pos().y = 94;
+    restoreButton.pos() = {9, 94, restoreButton.pos().w, restoreButton.pos().h};
     
     tex_invpanel = GFX::loadTex("romfs:/inventory/inv.png");
     tex_scroll = GFX::loadTex("romfs:/inventory/scrollbar.png");
     tex_infopanel = GFX::loadTex("romfs:/inventory/top_panel.png");
 
+    int off = 3;
+    int w = 46;
+    invgrid.init(5, NUM_INVENTORY_SLOTS/5, {64, 42}, w, off);
+//    coinsgrid.init(5, NUM_COIN_SLOTS/4, {?, ?}, w, off);
+  //  ammogrid.init(5, NUM_AMMO_SLOTS/4, {?, ?}, w, off);
+
     //load save
     parser.init();
     parser.readFile(path.c_str());
 
+    for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
+        char itmpath[64];
+        int id = parser.chardata.items[i].id;
+        if (id == 0)
+            sprintf(itmpath, "romfs:/items/Item_empty.png");
+        else
+            sprintf(itmpath, "romfs:/items/Item_%d.png", Terraria::getItem(id,parser).id);
+        tex_invitems[i] = GFX::loadTex(itmpath);
+    }
+
     //initialize pointers
-    changeItem(0, NULL, false);
+    changeItem(0, 0, false);
 }
 
 static int clamp(int d, int min, int max) {
@@ -40,7 +55,7 @@ static float map_value(float value, float input_min, float input_max, float outp
     return (value - input_min) / (input_max - input_min) * (output_max - output_min) + output_min;
 }
 
-void InventoryScene::printItemInfo(int yoff, Terraria::Item item, Terraria::Modifier mod, int count) {
+void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, int count) {
     app->fontManager.setScale(0.8);
     std::string modifier = mod.name;
     app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (mod.id ? (modifier+" ").c_str() : ""), item.name);
@@ -49,27 +64,35 @@ void InventoryScene::printItemInfo(int yoff, Terraria::Item item, Terraria::Modi
     app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", count, mod.type);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", item.id, mod.id);
+    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
 }
 
 void InventoryScene::changeItem(int slot, int id, bool replace) {
-    GFX::freeTex(curitem.tex);
-    GFX::freeTex(currepitem.tex);
     char itmpath[64];
     //item
     curitem.actualitem = &parser.chardata.items[slot];
     curitem.update(curitem.actualitem->id, curitem.actualitem->count, curitem.actualitem->mod, parser);
-    sprintf(itmpath, "romfs:/items/Item_%d.png", curitem.actualitem->id);
+    sprintf(itmpath, "romfs:/items/Item_%d.png", curitem.item.id);
+    if (curitem.actualitem->id == 0)
+        sprintf(itmpath, "romfs:/items/Item_empty.png");
+    GFX::freeTex(&curitem.tex);
     curitem.tex = GFX::loadTex(itmpath);
     //replace item
     currepitem.actualitem = &parser.outdata.items[slot];
-    int repid = currepitem.actualitem->id;
     if (replace)   
-        repid = id;
+        currepitem.actualitem->id = id;
+    int repid = currepitem.actualitem->id;
 
     currepitem.update(repid, currepitem.actualitem->count, currepitem.actualitem->mod, parser);
-    sprintf(itmpath, "romfs:/items/Item_%d.png", repid);
+    sprintf(itmpath, "romfs:/items/Item_%d.png", currepitem.item.id);
+    if (repid == 0)
+        sprintf(itmpath, "romfs:/items/Item_empty.png");
+    GFX::freeTex(&currepitem.tex);
     currepitem.tex = GFX::loadTex(itmpath);
+    if (replace) {
+        GFX::freeTex(&tex_invitems[slot]);
+        tex_invitems[slot] = GFX::loadTex(itmpath);
+    }
 }
 
 float InventoryScene::scaleItem(GFX::XY<int> wh, float scl, int max) {
@@ -83,7 +106,26 @@ void InventoryScene::update(void) {
 
         }
     } else {
+        int oldselection = selecteditem;
+        int curcol = selecteditem%invgrid.numcols;
+        if (Pad::Pressed(Pad::KEY_DLEFT)) {// && parser.outdata.items[index].itemid != 0) {
+            if (curcol != 0)
+                selecteditem --;
+        }
+        else if (Pad::Pressed(Pad::KEY_DDOWN)) {// && parser.outdata.items[index].itemid != 0) {
+            selecteditem += invgrid.numcols;
+        }
+        else if (Pad::Pressed(Pad::KEY_DUP)) {// && parser.outdata.items[index].itemid != 0) {
+            selecteditem -= invgrid.numcols;
+        }
+        else if (Pad::Pressed(Pad::KEY_DRIGHT)) {// && parser.outdata.items[index].itemid != 0) {
+            if (curcol != (invgrid.numcols-1))
+                selecteditem ++;
+        }
 
+        if (!invgrid.itemExists(selecteditem))
+            selecteditem = oldselection;
+        changeItem(selecteditem, parser.chardata.items[selecteditem].id, false);
     }
 
 
@@ -93,6 +135,13 @@ void InventoryScene::update(void) {
     if (Pad::Pressed(Pad::KEY_B))
         setScene(new SelectionScene());
 
+    if (trashButton.pressed())
+        changeItem(selecteditem, 0, true);
+
+    if (restoreButton.pressed()) {
+        int id = parser.chardata.items[selecteditem].id;
+        changeItem(selecteditem, id, true);
+    }
     //save edited file
     if (Pad::Pressed(Pad::KEY_START)) {
         parser.writeFile(parser.inputpath.c_str()); //overwrite
@@ -114,6 +163,15 @@ void InventoryScene::draw(void) {
     app->fontManager.setScale(0.5);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
 
+    for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
+        int item = i;
+        if (i == selecteditem)
+            GFX::drawRect(app->screens->bottom, invgrid.getItem(item), C2D_Color32(255, 0, 0, 255));
+        else
+            GFX::drawRect(app->screens->bottom, invgrid.getItem(item), C2D_Color32(0, 0, 0, 255));
+
+        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {invgrid.getItem(item).x+invgrid.getItem(item).w/2, invgrid.getItem(item).y+invgrid.getItem(item).h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
+    }
     //buttons
     trashButton.draw();
     restoreButton.draw();
@@ -129,11 +187,11 @@ void InventoryScene::draw(void) {
     }
     else {
         //item info
-        printItemInfo(0, curitem.item, curitem.mod, curitem.actualitem->count);
+        printItemInfo(0, curitem.actualitem->id, curitem.item, curitem.mod, curitem.actualitem->count);
         GFX::drawTexXY(curitem.tex, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(curitem.tex), 2, 100), GFX::Center);
     }
     //REPLACING
-    printItemInfo(118, currepitem.item, currepitem.mod, currepitem.actualitem->count);
+    printItemInfo(118, currepitem.actualitem->id, currepitem.item, currepitem.mod, currepitem.actualitem->count);
     GFX::drawTexXY(currepitem.tex, app->screens->top, {80,177}, scaleItem(GFX::getTexWH(currepitem.tex), 2, 100), GFX::Center);
 
     //text
@@ -144,9 +202,12 @@ void InventoryScene::draw(void) {
 InventoryScene::~InventoryScene(void) {
     trashButton.free();
     restoreButton.free();
-    GFX::freeTex(tex_invpanel);
-    GFX::freeTex(tex_scroll);
-    GFX::freeTex(tex_infopanel);
-    GFX::freeTex(curitem.tex);
-    GFX::freeTex(currepitem.tex);
+    GFX::freeTex(&tex_invpanel);
+    GFX::freeTex(&tex_scroll);
+    GFX::freeTex(&tex_infopanel);
+    GFX::freeTex(&curitem.tex);
+    GFX::freeTex(&currepitem.tex);
+
+    for (int i = 0; i < NUM_TOTAL_SLOTS; i++)
+        GFX::freeTex(&tex_invitems[i]);
 }

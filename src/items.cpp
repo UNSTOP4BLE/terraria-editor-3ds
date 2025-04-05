@@ -9,16 +9,17 @@
 namespace Terraria {
     
 Item getItem(int id, SaveFileParser &parser) {
-    // Search for the item with the specified id
     auto it = std::find_if(parser.allitems.begin(), parser.allitems.end(), [id](const Item& item) {
         return item.id == id;
     });
 
-    // If the item is found, return it, otherwise return a default item or handle error
+    if (id == 0)
+        return {0, "Empty"};
+
     if (it != parser.allitems.end())
-        return *it;  // Return the found item
+        return *it; 
     else 
-        return Item();  // Return a default (empty) item as a fallback todo
+        return {0, "Unknown"};
 }
 
 }
