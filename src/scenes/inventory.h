@@ -12,8 +12,8 @@ public:
     void draw(void);
     ~InventoryScene(void); 
 private:
-    void printItemInfo(int yoff);
-    void changeItem(int id);
+    void printItemInfo(int yoff, Terraria::Item item, Terraria::Modifier mod, int count);
+    void changeItem(int slot, int id, bool replace);
     float scaleItem(GFX::XY<int> wh, float scl, int max);
 
     UiButton trashButton;
@@ -21,8 +21,20 @@ private:
     bool editing;
     Terraria::SaveFileParser parser;
 
-    C2D_Image tex_invpanel;
-    C2D_Image tex_scroll;
-    C2D_Image tex_infopanel;
-    C2D_Image tex_curitem;
+    GFX::Tex tex_invpanel;
+    GFX::Tex tex_scroll;
+    GFX::Tex tex_infopanel;
+    struct {
+        GFX::Tex tex;
+        Terraria::Item item;
+        Terraria::InternalItem *actualitem;
+        Terraria::Modifier mod;
+        inline void update(int id, int count, int modid, Terraria::SaveFileParser &parser) {
+            actualitem->id = id;
+            actualitem->count = count;
+            actualitem->mod = modid;
+            item = Terraria::getItem(id, parser);
+            mod = parser.allmodifiers[modid];
+        }
+    } curitem, currepitem;
 };

@@ -23,20 +23,6 @@ static int pow2(int v) {
     v++;
     return (v >= 64 ? v : 64);
 }
-
-static int revertPow2(int v) {
-    if (v <= 1) return 0; 
-
-    v--;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-
-    return (v + 1) >> 1;
-}
-
   
 static void convertImage(C3D_Tex *tex, Tex3DS_SubTexture *subtex, uint8_t *buf, int size, int width, int height, GPU_TEXCOLOR format) {
     // RGBA -> ABGR
@@ -109,8 +95,8 @@ static XY<T> alignPos(Rect<T> pos, Align all) {
     return XY<T>{pos.x, pos.y};
 }
 
-C2D_Image loadTex(const char *path) {
-    C2D_Image img;
+Tex loadTex(const char *path) {
+    Tex img;
     int w, h, c;
     uint8_t *buffer = static_cast<uint8_t *>(stbi_load(path, &w, &h, &c, 4));
       
@@ -120,30 +106,35 @@ C2D_Image loadTex(const char *path) {
     C3D_Tex *tex = new C3D_Tex;
     Tex3DS_SubTexture *subtex = new Tex3DS_SubTexture;
     convertImage(tex, subtex, buffer, (w * h * 4), w, h, GPU_RGBA8);
-    img.tex = tex;
-    img.subtex = subtex;
+    img.tex.tex = tex;
+    img.tex.subtex = subtex;
     stbi_image_free(buffer);
+    img.open = true;
     return img;
 }
 
-void freeTex(C2D_Image *img) {
-    delete img->tex;
-    delete img->subtex;
+void freeTex(Tex &img) {
+    if (img.open)
+    {
+        delete img.tex.tex;
+        delete img.tex.subtex;
+        img.open = false;
+    }
 }
 
-XY<int> getTexWH(C2D_Image &img) {
-    return {revertPow2(img.tex->width), revertPow2(img.tex->height)};
+XY<int> getTexWH(Tex &img) {
+    return {img.tex.subtex->width, img.tex.subtex->height};
 }
 
-void drawTexXY(C2D_Image &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all) {
+void drawTexXY(Tex &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all) {
     Rect<int> srect = {pos.x, pos.y, static_cast<int>(getTexWH(img).x*scale), static_cast<int>(getTexWH(img).y*scale)};
     XY<int> dpos = alignPos(srect, all);
 
     C2D_SceneBegin(scr);
-    C2D_DrawImageAt(img, dpos.x, dpos.y, 0, nullptr, scale, scale);
+    C2D_DrawImageAt(img.tex, dpos.x, dpos.y, 0, nullptr, scale, scale);
 }
 
-void drawTex(C2D_Image &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all) {
+void drawTex(Tex &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all) {
     XY<float> newscale = {static_cast<float>(pos.w) / getTexWH(img).x, static_cast<float>(pos.h)/getTexWH(img).y};
     newscale.x *= scale;
     newscale.y *= scale;
@@ -152,7 +143,7 @@ void drawTex(C2D_Image &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, 
     XY<int> dpos = alignPos(srect, all);
 
     C2D_SceneBegin(scr);
-    C2D_DrawImageAt(img, dpos.x, dpos.y, 0, nullptr, newscale.x, newscale.y);
+    C2D_DrawImageAt(img.tex, dpos.x, dpos.y, 0, nullptr, newscale.x, newscale.y);
 }
 
 Sprite2D loadSprite2D(C2D_SpriteSheet _sprsheet, int i) {

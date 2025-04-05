@@ -49,11 +49,19 @@ public:
 private:
 };
 
-C2D_Image loadTex(const char *path);
-void freeTex(C2D_Image *img);
-XY<int> getTexWH(C2D_Image &img);
-void drawTexXY(C2D_Image &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all);
-void drawTex(C2D_Image &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all);
+class Tex {
+public:
+    Tex() : tex{}, open(false) {}
+    
+    C2D_Image tex;
+    bool open;
+};
+
+Tex loadTex(const char *path);
+void freeTex(Tex &img);
+XY<int> getTexWH(Tex &img);
+void drawTexXY(Tex &img, C3D_RenderTarget *scr, XY<int> pos, float scale, Align all);
+void drawTex(Tex &img, C3D_RenderTarget *scr, Rect<int> pos, float scale, Align all);
 Sprite2D loadSprite2D(C2D_SpriteSheet _sprsheet, int i);
 
 void init(void);

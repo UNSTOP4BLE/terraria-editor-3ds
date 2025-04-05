@@ -7,4 +7,5 @@
 
 namespace Terraria {
 
+Item getItem(int id, SaveFileParser &parser);
 }

@@ -1,3 +1,4 @@
+0= (NONE)
 1=Large (NULL)
 2=Massive (NULL)
 3=Dangerous (NULL)

@@ -3,6 +3,7 @@
 #include "fslib/File.hpp"
 #include "fslib/FileFunctions.hpp"
 #include "fslib/FsLib.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <string>
@@ -98,6 +99,27 @@ std::u16string utf8_to_utf16(const std::string& utf8_str) {
 }
 
 namespace Terraria {
+
+void SaveFileParser::init(void) {
+    char curline[128];
+    FILE *fp = fopen("romfs:/items.txt", "r");
+    ASSERTFUNC(fp, "failed to load items list");
+    for (int i = 0; fgets(curline, sizeof(curline), fp) != NULL; i++) {
+        Item item;
+        sscanf(curline, "%d=%[^\n]", &item.id, item.name);
+        allitems.push_back(item);
+    }
+    fclose(fp);
+    fp = fopen("romfs:/modifiers.txt", "r");
+    ASSERTFUNC(fp, "failed to load modifiers list");
+    for (int i = 0; fgets(curline, sizeof(curline), fp) != NULL; i++) {
+        Modifier mod;
+        sscanf(curline, "%d=%[^()] (%[^)])", &mod.id, mod.name, mod.type);
+
+        allmodifiers.push_back(mod);
+    }
+    fclose(fp);
+}
 
 void SaveFileParser::readFile(const char16_t*path) {
     FsLib::File f(path, FS_OPEN_READ);

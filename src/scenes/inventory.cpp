@@ -22,11 +22,13 @@ InventoryScene::InventoryScene(std::u16string path) {
     tex_invpanel = GFX::loadTex("romfs:/inventory/inv.png");
     tex_scroll = GFX::loadTex("romfs:/inventory/scrollbar.png");
     tex_infopanel = GFX::loadTex("romfs:/inventory/top_panel.png");
-    tex_curitem = GFX::loadTex("romfs:/inventory/top_panel.png"); //temporary
 
     //load save
+    parser.init();
     parser.readFile(path.c_str());
-    changeItem(0);
+
+    //initialize pointers
+    changeItem(0, NULL, false);
 }
 
 static int clamp(int d, int min, int max) {
@@ -38,23 +40,36 @@ static float map_value(float value, float input_min, float input_max, float outp
     return (value - input_min) / (input_max - input_min) * (output_max - output_min) + output_min;
 }
 
-//todo
-void InventoryScene::printItemInfo(int yoff) {
+void InventoryScene::printItemInfo(int yoff, Terraria::Item item, Terraria::Modifier mod, int count) {
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "replacementitemname");
+    std::string modifier = mod.name;
+    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (mod.id ? (modifier+" ").c_str() : ""), item.name);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "x in inventory\nMod type: x");
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", count, mod.type);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(x)\nmod(x)");
+    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", item.id, mod.id);
 }
 
-void InventoryScene::changeItem(int id) {
-    GFX::freeTex(&tex_curitem);
+void InventoryScene::changeItem(int slot, int id, bool replace) {
+    GFX::freeTex(curitem.tex);
+    GFX::freeTex(currepitem.tex);
     char itmpath[64];
-    sprintf(itmpath, "romfs:/items/Item_%d.png", id);
-    tex_curitem = GFX::loadTex(itmpath);
+    //item
+    curitem.actualitem = &parser.chardata.items[slot];
+    curitem.update(curitem.actualitem->id, curitem.actualitem->count, curitem.actualitem->mod, parser);
+    sprintf(itmpath, "romfs:/items/Item_%d.png", curitem.actualitem->id);
+    curitem.tex = GFX::loadTex(itmpath);
+    //replace item
+    currepitem.actualitem = &parser.outdata.items[slot];
+    int repid = currepitem.actualitem->id;
+    if (replace)   
+        repid = id;
+
+    currepitem.update(repid, currepitem.actualitem->count, currepitem.actualitem->mod, parser);
+    sprintf(itmpath, "romfs:/items/Item_%d.png", repid);
+    currepitem.tex = GFX::loadTex(itmpath);
 }
 
 float InventoryScene::scaleItem(GFX::XY<int> wh, float scl, int max) {
@@ -114,13 +129,12 @@ void InventoryScene::draw(void) {
     }
     else {
         //item info
-        printItemInfo(0);
-        GFX::drawTexXY(tex_curitem, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(tex_curitem), 2, 100), GFX::Center);
+        printItemInfo(0, curitem.item, curitem.mod, curitem.actualitem->count);
+        GFX::drawTexXY(curitem.tex, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(curitem.tex), 2, 100), GFX::Center);
     }
     //REPLACING
-    printItemInfo(118);
-    //todo replace curitem with curreplaceitem later
-    GFX::drawTexXY(tex_curitem, app->screens->top, {80,177}, scaleItem(GFX::getTexWH(tex_curitem), 2, 100), GFX::Center);
+    printItemInfo(118, currepitem.item, currepitem.mod, currepitem.actualitem->count);
+    GFX::drawTexXY(currepitem.tex, app->screens->top, {80,177}, scaleItem(GFX::getTexWH(currepitem.tex), 2, 100), GFX::Center);
 
     //text
     app->fontManager.setScale(0.8);
@@ -130,8 +144,9 @@ void InventoryScene::draw(void) {
 InventoryScene::~InventoryScene(void) {
     trashButton.free();
     restoreButton.free();
-    GFX::freeTex(&tex_invpanel);
-    GFX::freeTex(&tex_scroll);
-    GFX::freeTex(&tex_infopanel);
-    GFX::freeTex(&tex_curitem);
+    GFX::freeTex(tex_invpanel);
+    GFX::freeTex(tex_scroll);
+    GFX::freeTex(tex_infopanel);
+    GFX::freeTex(curitem.tex);
+    GFX::freeTex(currepitem.tex);
 }
