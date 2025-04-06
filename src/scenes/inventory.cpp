@@ -11,6 +11,7 @@ InventoryScene::InventoryScene(std::u16string path) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     editing = false;
     selecteditem = 0;
+    scroll = 0;
 
     trashButton.init("romfs:/trash.t3x");
     trashButton.pos() = {9, 44, trashButton.pos().w, trashButton.pos().h};
@@ -25,8 +26,8 @@ InventoryScene::InventoryScene(std::u16string path) {
     int off = 3;
     int w = 46;
     invgrid.init(5, NUM_INVENTORY_SLOTS/5, {64, 42}, w, off);
-//    coinsgrid.init(5, NUM_COIN_SLOTS/4, {?, ?}, w, off);
-  //  ammogrid.init(5, NUM_AMMO_SLOTS/4, {?, ?}, w, off);
+    coinsgrid.init(4, NUM_COIN_SLOTS/4, {64, off+invgrid.getItem(NUM_INVENTORY_SLOTS-1).y+invgrid.getItem(NUM_INVENTORY_SLOTS-1).h}, w, off);
+    ammogrid.init(4, NUM_AMMO_SLOTS/4, {64, off+coinsgrid.getItem(NUM_COIN_SLOTS-1).y+coinsgrid.getItem(NUM_COIN_SLOTS-1).h}, w, off);
 
     //load save
     parser.init();
@@ -107,19 +108,22 @@ void InventoryScene::update(void) {
         }
     } else {
         int oldselection = selecteditem;
-        int curcol = selecteditem%invgrid.numcols;
+        Terraria::ItemsGrid grid = invgrid;
+        int curcol = selecteditem%grid.numcols;
         if (Pad::Pressed(Pad::KEY_DLEFT)) {// && parser.outdata.items[index].itemid != 0) {
             if (curcol != 0)
                 selecteditem --;
         }
         else if (Pad::Pressed(Pad::KEY_DDOWN)) {// && parser.outdata.items[index].itemid != 0) {
-            selecteditem += invgrid.numcols;
+            selecteditem += grid.numcols;
+            scroll += 49;
         }
         else if (Pad::Pressed(Pad::KEY_DUP)) {// && parser.outdata.items[index].itemid != 0) {
-            selecteditem -= invgrid.numcols;
+            selecteditem -= grid.numcols;
+            scroll -= 49;
         }
         else if (Pad::Pressed(Pad::KEY_DRIGHT)) {// && parser.outdata.items[index].itemid != 0) {
-            if (curcol != (invgrid.numcols-1))
+            if (curcol != (grid.numcols-1))
                 selecteditem ++;
         }
 
@@ -140,6 +144,8 @@ void InventoryScene::update(void) {
 
     if (restoreButton.pressed()) {
         int id = parser.chardata.items[selecteditem].id;
+        currepitem.actualitem->count = curitem.actualitem->count;
+        currepitem.actualitem->mod = curitem.actualitem->mod;
         changeItem(selecteditem, id, true);
     }
     //save edited file
@@ -163,14 +169,27 @@ void InventoryScene::draw(void) {
     app->fontManager.setScale(0.5);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
 
-    for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
-        int item = i;
-        if (i == selecteditem)
-            GFX::drawRect(app->screens->bottom, invgrid.getItem(item), C2D_Color32(255, 0, 0, 255));
-        else
-            GFX::drawRect(app->screens->bottom, invgrid.getItem(item), C2D_Color32(0, 0, 0, 255));
 
-        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {invgrid.getItem(item).x+invgrid.getItem(item).w/2, invgrid.getItem(item).y+invgrid.getItem(item).h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
+    for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
+        Terraria::ItemsGrid grid = invgrid;
+        int cur = i;
+        if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
+            grid = ammogrid;
+            cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
+        }
+        else if (i > NUM_INVENTORY_SLOTS-1) {
+            grid = coinsgrid;
+            cur = i-NUM_INVENTORY_SLOTS;
+        }
+
+        GFX::Rect<int> r = grid.getItem(cur);
+        r.y -= scroll;
+        if (i == selecteditem)
+            GFX::drawRect(app->screens->bottom, r, C2D_Color32(255, 0, 0, 255));
+        else
+            GFX::drawRect(app->screens->bottom, r, C2D_Color32(0, 0, 0, 255));
+
+        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
     }
     //buttons
     trashButton.draw();

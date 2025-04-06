@@ -20,6 +20,7 @@ private:
     UiButton restoreButton;
     bool editing;
     int selecteditem;
+    int scroll;
     Terraria::SaveFileParser parser;
     Terraria::ItemsGrid invgrid;
     Terraria::ItemsGrid ammogrid;
