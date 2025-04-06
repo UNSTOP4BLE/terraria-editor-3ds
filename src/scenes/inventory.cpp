@@ -23,6 +23,9 @@ InventoryScene::InventoryScene(std::u16string path) {
     
     restoreButton.init("romfs:/buttons/restore/restore.t3x");
     restoreButton.pos() = {9, 94, restoreButton.pos().w, restoreButton.pos().h};
+
+    backButton.init("romfs:/buttons/back/back.t3x");
+    backButton.pos() = {3, 208, backButton.pos().w, backButton.pos().h};
     
     tex_invpanel = GFX::loadTex("romfs:/inventory/inv.png");
     tex_scroll = GFX::loadTex("romfs:/inventory/scrollbar.png");
@@ -193,9 +196,6 @@ void InventoryScene::update(void) {
 
     if (Pad::Pressed(Pad::KEY_X))
         editing = !editing;
-    //exit
-    if (Pad::Pressed(Pad::KEY_B))
-        setScene(new SelectionScene());
 
     if (trashButton.pressed())
         changeItem(selecteditem, 0, true);
@@ -206,6 +206,10 @@ void InventoryScene::update(void) {
         currepitem.actualitem->mod = curitem.actualitem->mod;
         changeItem(selecteditem, id, true);
     }
+    //exit
+    if (backButton.pressed() || Pad::Pressed(Pad::KEY_B))
+        setScene(new SelectionScene());
+
     //save edited file
     if (Pad::Pressed(Pad::KEY_START)) {
         parser.writeFile(parser.inputpath.c_str()); //overwrite
@@ -254,13 +258,14 @@ void InventoryScene::draw(void) {
 
     //help text
     char str[128];
-    sprintf(str, "%s%s\nPress B to exit without saving", "Press Start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
+    sprintf(str, "%s%s\nPress B or tap back to exit without saving", "Press Start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
     app->fontManager.setScale(0.5);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
 
     //buttons
     trashButton.draw();
     restoreButton.draw();
+    backButton.draw();
 
     //top screen
     GFX::drawTexXY(tex_infopanel, app->screens->top, {0, 0}, 1, GFX::Left);
@@ -292,6 +297,7 @@ InventoryScene::~InventoryScene(void) {
     C2D_SpriteSheetFree(invammo);
     trashButton.free();
     restoreButton.free();
+    backButton.free();
     GFX::freeTex(&tex_invpanel);
     GFX::freeTex(&tex_scroll);
     GFX::freeTex(&tex_infopanel);

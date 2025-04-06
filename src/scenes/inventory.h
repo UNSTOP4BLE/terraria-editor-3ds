@@ -21,6 +21,7 @@ private:
     GFX::SpriteSheet invhotbar, invstandard, invcoins, invammo;
     UiButton trashButton;
     UiButton restoreButton;
+    UiButton backButton;
     bool editing;
     int selecteditem;
     int scroll;
