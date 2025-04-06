@@ -16,15 +16,19 @@ private:
     void changeItem(int slot, int id, bool replace);
     float scaleItem(GFX::XY<int> wh, float scl, int max);
 
+
+    GFX::SpriteSheet invhotbar, invstandard, invcoins, invammo;
     UiButton trashButton;
     UiButton restoreButton;
     bool editing;
     int selecteditem;
     int scroll;
+    int max_scroll;
+    GFX::XY<int> scrollbar;
     Terraria::SaveFileParser parser;
     Terraria::ItemsGrid invgrid;
-    Terraria::ItemsGrid ammogrid;
     Terraria::ItemsGrid coinsgrid;
+    Terraria::ItemsGrid ammogrid;
 
     GFX::Tex tex_invpanel;
     GFX::Tex tex_scroll;

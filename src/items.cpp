@@ -14,7 +14,7 @@ Item getItem(int id, SaveFileParser &parser) {
     });
 
     if (id == 0)
-        return {0, "Empty"};
+        return {0, "Empty slot"};
 
     if (it != parser.allitems.end())
         return *it; 

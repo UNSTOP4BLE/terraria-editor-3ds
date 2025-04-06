@@ -5,8 +5,7 @@
 #include "app.h"
 #include "savefile.h"
 #include "gfx.h"
-//----- rows
-//||||| cols
+
 namespace Terraria {
 
 class ItemsGrid {

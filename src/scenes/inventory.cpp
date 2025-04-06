@@ -12,11 +12,16 @@ InventoryScene::InventoryScene(std::u16string path) {
     editing = false;
     selecteditem = 0;
     scroll = 0;
+    scrollbar = {309, 45};
 
-    trashButton.init("romfs:/trash.t3x");
+    invhotbar = C2D_SpriteSheetLoad("romfs:/buttons/hotbar/hotbar.t3x");
+    invstandard = C2D_SpriteSheetLoad("romfs:/buttons/standard/standard.t3x");
+    invcoins = C2D_SpriteSheetLoad("romfs:/buttons/coin/coin.t3x");
+    invammo = C2D_SpriteSheetLoad("romfs:/buttons/ammo/ammo.t3x");
+    trashButton.init("romfs:/buttons/trash/trash.t3x");
     trashButton.pos() = {9, 44, trashButton.pos().w, trashButton.pos().h};
     
-    restoreButton.init("romfs:/restore.t3x");
+    restoreButton.init("romfs:/buttons/restore/restore.t3x");
     restoreButton.pos() = {9, 94, restoreButton.pos().w, restoreButton.pos().h};
     
     tex_invpanel = GFX::loadTex("romfs:/inventory/inv.png");
@@ -28,6 +33,8 @@ InventoryScene::InventoryScene(std::u16string path) {
     invgrid.init(5, NUM_INVENTORY_SLOTS/5, {64, 42}, w, off);
     coinsgrid.init(4, NUM_COIN_SLOTS/4, {64, off+invgrid.getItem(NUM_INVENTORY_SLOTS-1).y+invgrid.getItem(NUM_INVENTORY_SLOTS-1).h}, w, off);
     ammogrid.init(4, NUM_AMMO_SLOTS/4, {64, off+coinsgrid.getItem(NUM_COIN_SLOTS-1).y+coinsgrid.getItem(NUM_COIN_SLOTS-1).h}, w, off);
+
+    max_scroll = ammogrid.getItem(NUM_AMMO_SLOTS-1).y - (4*(w))-1;
 
     //load save
     parser.init();
@@ -62,7 +69,7 @@ void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terrar
     app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (mod.id ? (modifier+" ").c_str() : ""), item.name);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nMod type: %s", count, mod.type);
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in slot\nMod type: %s", count, mod.type);
 
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
@@ -103,35 +110,67 @@ float InventoryScene::scaleItem(GFX::XY<int> wh, float scl, int max) {
 
 void InventoryScene::update(void) {
     if (editing) {
-        if (Pad::Held(Pad::KEY_L)) {// && parser.outdata.items[index].itemid != 0) {
+        if (Pad::Held(Pad::KEY_L)) {
 
         }
     } else {
         int oldselection = selecteditem;
         Terraria::ItemsGrid grid = invgrid;
         int curcol = selecteditem%grid.numcols;
-        if (Pad::Pressed(Pad::KEY_DLEFT)) {// && parser.outdata.items[index].itemid != 0) {
+        if (Pad::Pressed(Pad::KEY_DLEFT)) {
             if (curcol != 0)
                 selecteditem --;
         }
-        else if (Pad::Pressed(Pad::KEY_DDOWN)) {// && parser.outdata.items[index].itemid != 0) {
+        else if (Pad::Pressed(Pad::KEY_DDOWN)) {
             selecteditem += grid.numcols;
-            scroll += 49;
+            if (grid.itemExists(selecteditem) && grid.getItem(selecteditem).y-scroll > GFX::SCR_BTM_H/2)
+                scroll += grid.width+grid.offset;
         }
-        else if (Pad::Pressed(Pad::KEY_DUP)) {// && parser.outdata.items[index].itemid != 0) {
+        else if (Pad::Pressed(Pad::KEY_DUP)) {
             selecteditem -= grid.numcols;
-            scroll -= 49;
+            if (grid.itemExists(selecteditem) && grid.getItem(selecteditem).y-scroll < GFX::SCR_BTM_H/2)
+                scroll -= grid.width+grid.offset;
         }
-        else if (Pad::Pressed(Pad::KEY_DRIGHT)) {// && parser.outdata.items[index].itemid != 0) {
+        else if (Pad::Pressed(Pad::KEY_DRIGHT)) {
             if (curcol != (grid.numcols-1))
                 selecteditem ++;
         }
 
         if (!invgrid.itemExists(selecteditem))
             selecteditem = oldselection;
-        changeItem(selecteditem, parser.chardata.items[selecteditem].id, false);
+            
+        //items touch selection
+        for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
+            Terraria::ItemsGrid grid = invgrid;
+            int cur = i;
+            if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
+                grid = ammogrid;
+                cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
+            }
+            else if (i > NUM_INVENTORY_SLOTS-1) {
+                grid = coinsgrid;
+                cur = i-NUM_INVENTORY_SLOTS;
+            }
+            GFX::Rect<int> r = grid.getItem(cur);
+            r.y -= scroll;
+            if (Pad::isTouching(r))
+            {
+                selecteditem = i;
+            }
+        }
+        if (selecteditem != oldselection)
+            changeItem(selecteditem, parser.chardata.items[selecteditem].id, false);
     }
-
+    //scroll
+    touchPosition pos = Pad::GetTouchPos();
+    GFX::Rect<int> touchbar = {309, 45, 20, 231-GFX::getTexWH(tex_scroll).y};
+    int min = touchbar.y;
+    int max = touchbar.h;
+    if (Pad::isTouching(touchbar)) {
+        scroll = map_value(pos.py, min, max, 0, max_scroll);
+    }             
+    scroll = clamp(scroll, 0, max_scroll);
+    scrollbar.y = map_value(scroll, 0, max_scroll, min, max);  
 
     if (Pad::Pressed(Pad::KEY_X))
         editing = !editing;
@@ -157,7 +196,39 @@ void InventoryScene::update(void) {
 
 void InventoryScene::draw(void) {
     GFX::drawTexXY(tex_invpanel, app->screens->bottom, {60, 37}, 1, GFX::Left);
-    GFX::drawTexXY(tex_scroll, app->screens->bottom, {309, 42}, 1, GFX::Left);
+    GFX::drawTexXY(tex_scroll, app->screens->bottom, scrollbar, 1, GFX::Left);
+
+    //items 
+    for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
+        Terraria::ItemsGrid grid = invgrid;
+        GFX::SpriteSheet sheet = invstandard;
+        int cur = i;
+        if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
+            grid = ammogrid;
+            sheet = invammo;
+            cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
+        }
+        else if (i > NUM_INVENTORY_SLOTS-1) {
+            grid = coinsgrid;
+            sheet = invcoins;
+            cur = i-NUM_INVENTORY_SLOTS;
+        }
+        else if (i < NUM_HOTBAR_SLOTS) {
+            sheet = invhotbar;
+        }
+        GFX::Rect<int> r = grid.getItem(cur);
+        int sprite = 0;
+        r.y -= scroll;
+        if (i == selecteditem)
+            sprite = 2;
+        if (parser.outdata.items[i].id != 0)
+            sprite += 1;
+
+        GFX::Sprite2D spr = GFX::loadSprite2D(sheet, sprite);
+        spr.pos() = {static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w), static_cast<float>(r.h)};
+        spr.draw(app->screens->bottom);
+        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
+    }
 
     //hider
     GFX::drawRect(app->screens->bottom, {0, 0, GFX::SCR_BTM_W, 37}, app->clearcol);
@@ -169,28 +240,6 @@ void InventoryScene::draw(void) {
     app->fontManager.setScale(0.5);
     app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
 
-
-    for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
-        Terraria::ItemsGrid grid = invgrid;
-        int cur = i;
-        if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
-            grid = ammogrid;
-            cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
-        }
-        else if (i > NUM_INVENTORY_SLOTS-1) {
-            grid = coinsgrid;
-            cur = i-NUM_INVENTORY_SLOTS;
-        }
-
-        GFX::Rect<int> r = grid.getItem(cur);
-        r.y -= scroll;
-        if (i == selecteditem)
-            GFX::drawRect(app->screens->bottom, r, C2D_Color32(255, 0, 0, 255));
-        else
-            GFX::drawRect(app->screens->bottom, r, C2D_Color32(0, 0, 0, 255));
-
-        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
-    }
     //buttons
     trashButton.draw();
     restoreButton.draw();
@@ -207,8 +256,8 @@ void InventoryScene::draw(void) {
     else {
         //item info
         printItemInfo(0, curitem.actualitem->id, curitem.item, curitem.mod, curitem.actualitem->count);
-        GFX::drawTexXY(curitem.tex, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(curitem.tex), 2, 100), GFX::Center);
     }
+    GFX::drawTexXY(curitem.tex, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(curitem.tex), 2, 100), GFX::Center);
     //REPLACING
     printItemInfo(118, currepitem.actualitem->id, currepitem.item, currepitem.mod, currepitem.actualitem->count);
     GFX::drawTexXY(currepitem.tex, app->screens->top, {80,177}, scaleItem(GFX::getTexWH(currepitem.tex), 2, 100), GFX::Center);
@@ -219,6 +268,10 @@ void InventoryScene::draw(void) {
 }
 
 InventoryScene::~InventoryScene(void) {
+    C2D_SpriteSheetFree(invhotbar);
+    C2D_SpriteSheetFree(invstandard);
+    C2D_SpriteSheetFree(invcoins);
+    C2D_SpriteSheetFree(invammo);
     trashButton.free();
     restoreButton.free();
     GFX::freeTex(&tex_invpanel);

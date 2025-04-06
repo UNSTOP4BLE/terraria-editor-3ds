@@ -1,4 +1,6 @@
 --atlas -f rgba8888 -z auto
 
-restore0.png
-restore1.png
+0.png
+0s.png
+1.png
+1s.png
