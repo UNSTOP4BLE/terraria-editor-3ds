@@ -29,10 +29,12 @@ InventoryScene::InventoryScene(std::u16string path) {
     tex_infopanel = GFX::loadTex("romfs:/inventory/top_panel.png");
 
     int off = 3;
+    int offy = 0;
     int w = 46;
     invgrid.init(5, NUM_INVENTORY_SLOTS/5, {64, 42}, w, off);
-    coinsgrid.init(4, NUM_COIN_SLOTS/4, {64, off+invgrid.getItem(NUM_INVENTORY_SLOTS-1).y+invgrid.getItem(NUM_INVENTORY_SLOTS-1).h}, w, off);
-    ammogrid.init(4, NUM_AMMO_SLOTS/4, {64, off+coinsgrid.getItem(NUM_COIN_SLOTS-1).y+coinsgrid.getItem(NUM_COIN_SLOTS-1).h}, w, off);
+    offy = 49;
+    coinsgrid.init(4, NUM_COIN_SLOTS/4, {64, offy+off+invgrid.getItem(NUM_INVENTORY_SLOTS-1).y+invgrid.getItem(NUM_INVENTORY_SLOTS-1).h}, w, off);
+    ammogrid.init(4, NUM_AMMO_SLOTS/4, {64, offy+off+coinsgrid.getItem(NUM_COIN_SLOTS-1).y+coinsgrid.getItem(NUM_COIN_SLOTS-1).h}, w, off);
 
     max_scroll = ammogrid.getItem(NUM_AMMO_SLOTS-1).y - (4*(w))-1;
 
@@ -108,6 +110,28 @@ float InventoryScene::scaleItem(GFX::XY<int> wh, float scl, int max) {
     return clamp(static_cast<int>(scl * maxw), 0, max) / maxw;
 }
 
+Terraria::ItemsGrid InventoryScene::getGrid(int selection, int &offset, GFX::SpriteSheet &sheet) {
+    Terraria::ItemsGrid grid = invgrid;
+    GFX::SpriteSheet setsheet = invstandard;
+    offset = 0;
+    if (selection > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
+        grid = ammogrid;
+        setsheet = invammo;
+        offset = (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
+    }
+    else if (selection > NUM_INVENTORY_SLOTS-1) {
+        grid = coinsgrid;
+        setsheet = invcoins;
+        offset = NUM_INVENTORY_SLOTS;
+    }
+    else if (selection < NUM_HOTBAR_SLOTS) {
+        setsheet = invhotbar;
+    }
+    if (sheet != 0)
+        sheet = setsheet;
+    return grid;
+}
+
 void InventoryScene::update(void) {
     if (editing) {
         if (Pad::Held(Pad::KEY_L)) {
@@ -115,20 +139,24 @@ void InventoryScene::update(void) {
         }
     } else {
         int oldselection = selecteditem;
-        Terraria::ItemsGrid grid = invgrid;
-        int curcol = selecteditem%grid.numcols;
+        int i = 0;
+        GFX::SpriteSheet tmp = NULL;
+        Terraria::ItemsGrid grid = getGrid(selecteditem, i, tmp);
+      
+        int curcol = (selecteditem-i)%grid.numcols;
+        //input
         if (Pad::Pressed(Pad::KEY_DLEFT)) {
             if (curcol != 0)
                 selecteditem --;
         }
         else if (Pad::Pressed(Pad::KEY_DDOWN)) {
             selecteditem += grid.numcols;
-            if (grid.itemExists(selecteditem) && grid.getItem(selecteditem).y-scroll > GFX::SCR_BTM_H/2)
+            if (grid.itemExists((selecteditem-i)) && (grid.getItem((selecteditem-i)).y-grid.getItem((selecteditem-i)).h)-scroll > GFX::SCR_BTM_H/2)
                 scroll += grid.width+grid.offset;
         }
         else if (Pad::Pressed(Pad::KEY_DUP)) {
             selecteditem -= grid.numcols;
-            if (grid.itemExists(selecteditem) && grid.getItem(selecteditem).y-scroll < GFX::SCR_BTM_H/2)
+            if (grid.itemExists((selecteditem-i)) && (grid.getItem((selecteditem-i)).y+grid.getItem((selecteditem-i)).h)-scroll < GFX::SCR_BTM_H/2)
                 scroll -= grid.width+grid.offset;
         }
         else if (Pad::Pressed(Pad::KEY_DRIGHT)) {
@@ -136,27 +164,18 @@ void InventoryScene::update(void) {
                 selecteditem ++;
         }
 
-        if (!invgrid.itemExists(selecteditem))
+        if (!grid.itemExists((selecteditem-i)))
             selecteditem = oldselection;
             
         //items touch selection
         for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
-            Terraria::ItemsGrid grid = invgrid;
-            int cur = i;
-            if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
-                grid = ammogrid;
-                cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
-            }
-            else if (i > NUM_INVENTORY_SLOTS-1) {
-                grid = coinsgrid;
-                cur = i-NUM_INVENTORY_SLOTS;
-            }
-            GFX::Rect<int> r = grid.getItem(cur);
+            int cur = 0;
+            GFX::SpriteSheet tmp = NULL;
+            Terraria::ItemsGrid grid = getGrid(i, cur, tmp);
+            GFX::Rect<int> r = grid.getItem(i-cur);
             r.y -= scroll;
             if (Pad::isTouching(r))
-            {
                 selecteditem = i;
-            }
         }
         if (selecteditem != oldselection)
             changeItem(selecteditem, parser.chardata.items[selecteditem].id, false);
@@ -200,22 +219,11 @@ void InventoryScene::draw(void) {
 
     //items 
     for (int i = 0; i < NUM_TOTAL_SLOTS; i++) {
-        Terraria::ItemsGrid grid = invgrid;
+        Terraria::ItemsGrid grid;
         GFX::SpriteSheet sheet = invstandard;
-        int cur = i;
-        if (i > (NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS)-1) {
-            grid = ammogrid;
-            sheet = invammo;
-            cur = i-(NUM_INVENTORY_SLOTS+NUM_COIN_SLOTS);
-        }
-        else if (i > NUM_INVENTORY_SLOTS-1) {
-            grid = coinsgrid;
-            sheet = invcoins;
-            cur = i-NUM_INVENTORY_SLOTS;
-        }
-        else if (i < NUM_HOTBAR_SLOTS) {
-            sheet = invhotbar;
-        }
+        int cur;
+        grid = getGrid(i, cur, sheet);
+        cur = i-cur;
         GFX::Rect<int> r = grid.getItem(cur);
         int sprite = 0;
         r.y -= scroll;
@@ -229,6 +237,16 @@ void InventoryScene::draw(void) {
         spr.draw(app->screens->bottom);
         GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
     }
+
+    //coins text
+    app->fontManager.setScale(0.9);
+    int y = coinsgrid.getItem(0).y-35;
+    app->fontManager.print(app->screens->bottom, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Coins:");
+
+    //ammo text
+    app->fontManager.setScale(0.9);
+    y = ammogrid.getItem(0).y-35;
+    app->fontManager.print(app->screens->bottom, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Ammo:");
 
     //hider
     GFX::drawRect(app->screens->bottom, {0, 0, GFX::SCR_BTM_W, 37}, app->clearcol);

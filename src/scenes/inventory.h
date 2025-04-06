@@ -15,6 +15,7 @@ private:
     void printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, int count);
     void changeItem(int slot, int id, bool replace);
     float scaleItem(GFX::XY<int> wh, float scl, int max);
+    Terraria::ItemsGrid getGrid(int selection, int &offset, GFX::SpriteSheet &sheet);
 
 
     GFX::SpriteSheet invhotbar, invstandard, invcoins, invammo;
