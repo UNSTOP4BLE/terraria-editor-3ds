@@ -9,7 +9,7 @@ public:
     std::string getValue(void);
 private:
     SwkbdState swkbd;
-    char str[64];
+    char str[256];
     SwkbdStatusData swkbdStatus;
     SwkbdLearningData swkbdLearning;
 

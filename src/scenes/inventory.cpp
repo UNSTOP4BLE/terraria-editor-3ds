@@ -71,10 +71,10 @@ static float map_value(float value, float input_min, float input_max, float outp
 void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, int count) {
     app->fontManager.setScale(0.8);
     std::string modifier = mod.name;
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", (mod.id ? (modifier+" ").c_str() : ""), item.name);
+    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", ((mod.id != 0) ? (modifier).c_str() : ""), item.name);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in slot\nMod type: %s", count, mod.type);
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in slot\nModifier type:\n%s", count, mod.type);
 
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
@@ -136,10 +136,32 @@ Terraria::ItemsGrid InventoryScene::getGrid(int selection, int &offset, GFX::Spr
 }
 
 void InventoryScene::update(void) {
+    auto &item = currepitem.actualitem;
     if (editing) {
-        if (Pad::Held(Pad::KEY_L)) {
-
+        if (Pad::Held(Pad::KEY_L) && item->id != 0) {
+            int mod = item->mod;
+            if (Pad::Pressed(Pad::KEY_DLEFT))
+                mod -= 1;
+            else if (Pad::Pressed(Pad::KEY_DRIGHT))
+                mod += 1;
+            item->mod = clamp(mod, 0, parser.allmodifiers.size()-1); 
+            currepitem.update(item->id, item->count, item->mod, parser);
         }
+        else { //items
+            if (Pad::Pressed(Pad::KEY_DLEFT))
+                item->id -= 1;
+            else if (Pad::Pressed(Pad::KEY_DRIGHT))
+                item->id += 1;
+            if (Pad::Pressed(Pad::KEY_DUP))
+                item->count += 1;
+            else if (Pad::Pressed(Pad::KEY_DDOWN))
+                item->count -= 1;
+
+            item->id = clamp(item->id, parser.allitems[0].id, parser.allitems[parser.allitems.size()-1].id); 
+            item->count = clamp(item->count, 0, INT16_MAX-1); 
+            changeItem(selecteditem, item->id, true);
+        }
+
     } else {
         int oldselection = selecteditem;
         int i = 0;
@@ -239,7 +261,7 @@ void InventoryScene::draw(void) {
         GFX::Sprite2D spr = GFX::loadSprite2D(sheet, sprite);
         spr.pos() = {static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w), static_cast<float>(r.h)};
         spr.draw(app->screens->bottom);
-        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(curitem.tex), 1, 40), GFX::Center);
+        GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(tex_invitems[i]), 1, 40), GFX::Center);
     }
 
     //coins text
@@ -274,7 +296,7 @@ void InventoryScene::draw(void) {
     if (editing) {
         GFX::drawRect(app->screens->top, {160, 0, 240, 117}, app->clearcol);
         app->fontManager.setScale(0.6);
-        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name\nB: type in item count\nRT: type in item modifier");
+        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name(todo)\nB: type in item count(todo)\nRT: type in item modifier(todo)");
     }
     else {
         //item info

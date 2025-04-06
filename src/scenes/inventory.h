@@ -44,8 +44,10 @@ private:
         inline void update(int id, int count, int modid, Terraria::SaveFileParser &parser) {
             item = Terraria::getItem(id, parser);
             actualitem->id = id;
-            if (item.id == 0)
+            if (item.id == 0) {
                 count = 0;
+                modid = 0;
+            }
             actualitem->count = count;
             actualitem->mod = modid;
             mod = parser.allmodifiers[modid];
