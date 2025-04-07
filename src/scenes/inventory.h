@@ -12,7 +12,7 @@ public:
     void draw(void);
     ~InventoryScene(void); 
 private:
-    void printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, int count);
+    void printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, Terraria::CharacterData &data);
     void changeItem(int slot, int id, bool replace);
     float scaleItem(GFX::XY<int> wh, float scl, int max);
     Terraria::ItemsGrid getGrid(int selection, int &offset, GFX::SpriteSheet &sheet);

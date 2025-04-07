@@ -29,4 +29,8 @@ public:
 };
 
 Item getItem(int id, SaveFileParser &parser);
+Item getItemWithName(const char* name, SaveFileParser& parser);
+Modifier getModifierWithName(const char* name, SaveFileParser& parser);
+int getTotalItemCount(int id, CharacterData &data);
+
 }

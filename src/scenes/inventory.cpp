@@ -68,13 +68,13 @@ static float map_value(float value, float input_min, float input_max, float outp
     return (value - input_min) / (input_max - input_min) * (output_max - output_min) + output_min;
 }
 
-void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, int count) {
+void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, Terraria::CharacterData &data) {
     app->fontManager.setScale(0.8);
     std::string modifier = mod.name;
     app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", ((mod.id != 0) ? (modifier).c_str() : ""), item.name);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in slot\nModifier type:\n%s", count, mod.type);
+    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type:\n%s", Terraria::getTotalItemCount(id, data), mod.type);
 
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
@@ -157,6 +157,24 @@ void InventoryScene::update(void) {
             else if (Pad::Pressed(Pad::KEY_DDOWN))
                 item->count -= 1;
 
+            if (Pad::Pressed(Pad::KEY_A)) {
+                app->keyboard.openNum("item count");
+                auto str = app->keyboard.getValue().c_str();
+                if (strcmp(str, ""))
+                    item->count = atoi(str);
+            }
+            if (Pad::Pressed(Pad::KEY_Y)) {
+                app->keyboard.open("item name");
+                auto str = app->keyboard.getValue().c_str();
+                if (strcmp(str, ""))
+                item->id = Terraria::getItemWithName(str, parser).id;
+            }
+            if (Pad::Pressed(Pad::KEY_R)) {
+                app->keyboard.open("item modifier name");
+                auto str = app->keyboard.getValue().c_str();
+                if (strcmp(str, ""))
+                    item->mod = Terraria::getModifierWithName(str, parser).id;
+            }
             item->id = clamp(item->id, parser.allitems[0].id, parser.allitems[parser.allitems.size()-1].id); 
             item->count = clamp(item->count, 0, INT16_MAX-1); 
             changeItem(selecteditem, item->id, true);
@@ -262,6 +280,11 @@ void InventoryScene::draw(void) {
         spr.pos() = {static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w), static_cast<float>(r.h)};
         spr.draw(app->screens->bottom);
         GFX::drawTexXY(tex_invitems[i], app->screens->bottom, {r.x+r.w/2, r.y+r.h/2}, scaleItem(GFX::getTexWH(tex_invitems[i]), 1, 40), GFX::Center);
+        int curcount = parser.outdata.items[i].count;
+        if (curcount > 1) {
+            app->fontManager.setScale(0.7);
+            app->fontManager.print(app->screens->bottom, GFX::Right, r.x+r.w-2, r.y+r.h-18, "%d", curcount);
+        }
     }
 
     //coins text
@@ -296,18 +319,21 @@ void InventoryScene::draw(void) {
     if (editing) {
         GFX::drawRect(app->screens->top, {160, 0, 240, 117}, app->clearcol);
         app->fontManager.setScale(0.6);
-        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name(todo)\nB: type in item count(todo)\nRT: type in item modifier(todo)");
+        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name\nA: type in item count\nRT: type in item modifier");
     }
     else {
         //item info
-        printItemInfo(0, curitem.actualitem->id, curitem.item, curitem.mod, curitem.actualitem->count);
+        printItemInfo(0, curitem.actualitem->id, curitem.item, curitem.mod, parser.chardata);
     }
     GFX::drawTexXY(curitem.tex, app->screens->top, {80,63}, scaleItem(GFX::getTexWH(curitem.tex), 2, 100), GFX::Center);
     //REPLACING
-    printItemInfo(118, currepitem.actualitem->id, currepitem.item, currepitem.mod, currepitem.actualitem->count);
+    printItemInfo(118, currepitem.actualitem->id, currepitem.item, currepitem.mod, parser.outdata);
     GFX::drawTexXY(currepitem.tex, app->screens->top, {80,177}, scaleItem(GFX::getTexWH(currepitem.tex), 2, 100), GFX::Center);
 
     //text
+    app->fontManager.setScale(0.8);
+    app->fontManager.print(app->screens->top, GFX::Center, 80, 15, "Editing: %s", parser.chardata.charname.c_str());
+
     app->fontManager.setScale(0.8);
     app->fontManager.print(app->screens->top, GFX::Center, 80, 126, "Replace with:");
 }
