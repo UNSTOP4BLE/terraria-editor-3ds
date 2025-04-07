@@ -100,6 +100,8 @@ void InventoryScene::changeItem(int slot, int id, bool replace) {
     sprintf(itmpath, "romfs:/items/Item_%d.png", currepitem.item.id);
     if (repid == 0)
         sprintf(itmpath, "romfs:/items/Item_empty.png");
+    else if (currepitem.actualitem->count == 0)
+        currepitem.actualitem->count = 1;
     GFX::freeTex(&currepitem.tex);
     currepitem.tex = GFX::loadTex(itmpath);
     if (replace) {
