@@ -1,14 +1,15 @@
 #include "fileselection.h"
 #include "../savefile.h"
+#include "../backup.h"
 #include "../pad.h"
 #include "inventory.h"
-
-constexpr const char *path_prefix = "extdata:/v2/";
+#include "saving.h"
+#include "restorescene.h"
 
 SelectionScene::SelectionScene(void) {
     setSceneCol(C2D_Color32(0, 0, 0, 255));
     selection = 0;
-    FsLib::Directory savedir(utf8_to_utf16(path_prefix));
+    FsLib::Directory savedir(utf8_to_utf16(EXTDATA_PATH));
 
     ASSERTFUNC(savedir.IsOpen(), "FAILED TO OPEN SAVE DIRECTORY");
     
@@ -27,10 +28,26 @@ void SelectionScene::update(void) {
         else if (Pad::Pressed(Pad::KEY_DDOWN) && selection < static_cast<int>(filelist.size())-1)
             selection += 1;
 
-        std::string path = path_prefix;
+        std::string path = EXTDATA_PATH;
         path += filelist[selection].c_str();
         if (Pad::Pressed(Pad::KEY_A))
             setScene(new InventoryScene(utf8_to_utf16(path)));
+        if (Pad::Pressed(Pad::KEY_X)) {
+            writeBackup(BACKUP_PATH, utf8_to_utf16(path), filelist[selection].c_str());
+            setScene(new SavingScene(("Backup success: \n" + std::string(BACKUP_PATH) + filelist[selection].c_str()).c_str()));
+        }
+        if (Pad::Pressed(Pad::KEY_Y))
+            setScene(new RestoreScene());
+        std::string backuppath = AUTOBACKUP_PATH + filelist[selection] + ".bak";
+        if (Pad::Pressed(Pad::KEY_B)) //todo add are you sure screen
+        {
+            if (FsLib::FileExists(utf8_to_utf16(backuppath))) {
+                restoreBackup(backuppath);
+                setScene(new SavingScene(("Backup success: \n" + std::string(BACKUP_PATH) + filelist[selection].c_str()).c_str()));
+            }
+            else 
+                setScene(new SavingScene(" You have no autobackups,\nthey are made automatically\n  by editing the save file"));
+        }
     }
 }
 
@@ -45,7 +62,7 @@ void SelectionScene::draw(void) {
             app->fontManager.print(app->screens->top, GFX::Left, offs, offs+y, "%s%s", sel, filelist[i].c_str());
             y += 30;
         }
-        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "HOME - Exit\nA - Edit file\nY - Restore backup\nX - Backup");
+        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2-20, "HOME - Exit\nA - Edit file\nY - Restore backup\nX - Backup\nB - Restore autobackup");
     }
     else {
         app->fontManager.print(app->screens->top, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "You have no savefiles!");

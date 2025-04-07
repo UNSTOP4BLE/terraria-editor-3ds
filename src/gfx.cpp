@@ -274,7 +274,8 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, con
     }
 
     int scrw = 0;
-    if (screen == app->screens->top)
+    //todo fix
+    if (app->screens->top->used)
         scrw = SCR_TOP_W;
     else
         scrw = SCR_BTM_W;
