@@ -9,10 +9,12 @@
 SelectionScene::SelectionScene(void) {
     setSceneCol(C2D_Color32(0, 0, 0, 255));
     selection = 0;
-    FsLib::Directory savedir(utf8_to_utf16(EXTDATA_PATH));
+    FsLib::Directory savedir;
+    if (FsLib::DirectoryExists(utf8_to_utf16(EXTDATA_PATH))) {
+        savedir.Open(utf8_to_utf16(EXTDATA_PATH));
+        ASSERTFUNC(savedir.IsOpen(), "FAILED TO OPEN SAVE DIRECTORY");
+    }
 
-    ASSERTFUNC(savedir.IsOpen(), "FAILED TO OPEN SAVE DIRECTORY");
-    
     for (int i = 0; i < static_cast<int>(savedir.GetEntryCount()); i++) {
         std::string str = utf16_to_utf8(savedir[i]);
 
@@ -30,20 +32,20 @@ void SelectionScene::update(void) {
 
         std::string path = EXTDATA_PATH;
         path += filelist[selection].c_str();
+        std::string backuppath = AUTOBACKUP_PATH + filelist[selection] + ".bak";
+        if (Pad::Pressed(Pad::KEY_Y))
+            setScene(new RestoreScene());
         if (Pad::Pressed(Pad::KEY_A))
             setScene(new InventoryScene(utf8_to_utf16(path)));
         if (Pad::Pressed(Pad::KEY_X)) {
             writeBackup(BACKUP_PATH, utf8_to_utf16(path), filelist[selection].c_str());
             setScene(new SavingScene(("Backup success: \n" + std::string(BACKUP_PATH) + filelist[selection].c_str()).c_str()));
         }
-        if (Pad::Pressed(Pad::KEY_Y))
-            setScene(new RestoreScene());
-        std::string backuppath = AUTOBACKUP_PATH + filelist[selection] + ".bak";
         if (Pad::Pressed(Pad::KEY_B)) //todo add are you sure screen
         {
             if (FsLib::FileExists(utf8_to_utf16(backuppath))) {
                 restoreBackup(backuppath);
-                setScene(new SavingScene(("Backup success: \n" + std::string(BACKUP_PATH) + filelist[selection].c_str()).c_str()));
+                setScene(new SavingScene(("Restore backup success: \n" + std::string(BACKUP_PATH) + filelist[selection].c_str()).c_str()));
             }
             else 
                 setScene(new SavingScene(" You have no autobackups,\nthey are made automatically\n  by editing the save file"));
