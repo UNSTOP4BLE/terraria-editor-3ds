@@ -255,9 +255,11 @@ void InventoryScene::update(void) {
 
     //save edited file
     if (Pad::Pressed(Pad::KEY_START)) {
-        writeAutoBackup(utf8_to_utf16(parser.inputpath), parser.inputpath.substr(parser.inputpath.find_last_of("/") + 1));
-        parser.writeFile(parser.inputpath.c_str()); //overwrite
-        setScene(new SavingScene("Save successful!"));
+        if (confirmScreen()) {
+            writeAutoBackup(utf8_to_utf16(parser.inputpath), parser.inputpath.substr(parser.inputpath.find_last_of("/") + 1));
+            parser.writeFile(parser.inputpath.c_str()); //overwrite
+            setScene(new SavingScene("Save successful!"));
+        }
     }
 }
 

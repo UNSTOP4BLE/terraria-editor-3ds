@@ -20,6 +20,21 @@ void ErrMSG(const char *filename, const char *function, int line, const char *ex
     }
 }
 
+bool confirmScreen(void) {
+    while(1)
+    {
+		Pad::Read();
+		GFX::clear(app->clearcol);
+        app->fontManager.print(app->screens->top, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "Are you sure?");
+        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "A - Confirm\nB - Go back");
+		if (Pad::Pressed(Pad::KEY_A))
+			return true;
+		else if (Pad::Pressed(Pad::KEY_B))
+			return false;
+		GFX::flip();
+    }
+}
+
 int main(void) {
 	romfsInit();
 	app = new Terraeditor();

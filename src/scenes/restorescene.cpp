@@ -25,6 +25,8 @@ RestoreScene::RestoreScene(void) {
 }
 
 void RestoreScene::update(void) {
+    if (Pad::Pressed(Pad::KEY_B))
+        setScene(new SelectionScene());
     if (backupfiles.size() != 0) {
         if (Pad::Pressed(Pad::KEY_DUP) && selection > 0) {
             selection -= 1;
@@ -34,17 +36,19 @@ void RestoreScene::update(void) {
             selection += 1;
             scroll += 30;
         }
-        if (Pad::Pressed(Pad::KEY_X)) { //todo add are you sure screen
-            deleteBackup(backupfullpaths[selection].c_str());
-            setScene(new RestoreScene());
+        else if (Pad::Pressed(Pad::KEY_X)) { //todo add are you sure screen
+            if (confirmScreen()) {
+                deleteBackup(backupfullpaths[selection].c_str());
+                setScene(new RestoreScene());
+            }
         }
-        if (Pad::Pressed(Pad::KEY_A)) { //todo add are you sure screen
-            restoreBackup(backupfullpaths[selection].c_str());
-            setScene(new SavingScene("Restored:\n" + backupfullpaths[selection]));
+        else if (Pad::Pressed(Pad::KEY_A)) {
+            if (confirmScreen()) {
+                restoreBackup(backupfullpaths[selection].c_str());
+                setScene(new SavingScene("Restored:\n" + backupfullpaths[selection]));
+            }
         }
     }
-    if (Pad::Pressed(Pad::KEY_B))
-        setScene(new SelectionScene());
 }
 
 void RestoreScene::draw(void) { 
