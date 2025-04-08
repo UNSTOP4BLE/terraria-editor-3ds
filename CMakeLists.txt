@@ -59,3 +59,4 @@ ctr_create_3dsx(${PROJECT_NAME}
   SMDH ${PROJECT_NAME}.smdh
   ROMFS "${PROJECT_BINARY_DIR}/assets"
 )
+#execute_process("makerom -f /cia -o ${PROJECT_BINARY_DIR}/terraedit3d.cia")

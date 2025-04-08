@@ -247,7 +247,7 @@ float FontManager::getW(const char *str) {
     return static_cast<float>(std::max(width, maxwidth));
 }
 
-void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, const char *format, ...) {
+void FontManager::print(C3D_RenderTarget* screen, int scrw, Align all, float x, int y, const char *format, ...) {
     va_list list;
     char str[1024] = "";
 
@@ -273,17 +273,11 @@ void FontManager::print(C3D_RenderTarget* screen, Align all, float x, int y, con
             break;
     }
 
-    int scrw = 0;
-    //todo fix
-    if (app->screens->top->used)
-        scrw = SCR_TOP_W;
-    else
-        scrw = SCR_BTM_W;
     float maxscl = fontscale;
     auto available = scrw - x;
     
     float newscale = (available / strw);
-    if (newscale < 1.0f) {
+    if (newscale < fontscale) {
         fontscale = std::min(newscale*maxscl, maxscl);
     }
 

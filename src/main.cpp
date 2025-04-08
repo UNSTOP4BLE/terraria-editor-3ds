@@ -15,7 +15,7 @@ void ErrMSG(const char *filename, const char *function, int line, const char *ex
     while(1)
     {
 		GFX::clear(app->clearcol);
-        app->fontManager.print(app->screens->top, GFX::Left, 0, 0, errstr);
+        app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, 0, 0, errstr);
 		GFX::flip();
     }
 }
@@ -25,8 +25,8 @@ bool confirmScreen(void) {
     {
 		Pad::Read();
 		GFX::clear(app->clearcol);
-        app->fontManager.print(app->screens->top, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "Are you sure?");
-        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "A - Confirm\nB - Go back");
+        app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "Are you sure?");
+        app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "A - Confirm\nB - Go back");
 		if (Pad::Pressed(Pad::KEY_A))
 			return true;
 		else if (Pad::Pressed(Pad::KEY_B))

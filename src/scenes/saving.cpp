@@ -14,7 +14,7 @@ void SavingScene::update(void) {
 }
 
 void SavingScene::draw(void) { 
-    app->fontManager.print(app->screens->top, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, msg.c_str());
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, msg.c_str());
 }
 
 SavingScene::~SavingScene(void) {

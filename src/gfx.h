@@ -74,7 +74,7 @@ class FontManager {
 public:
     void init(const char *path);
     void setScale(float scale);
-    void print(C3D_RenderTarget* screen, Align all, float x, int y, const char *format, ...);
+    void print(C3D_RenderTarget* screen, int scrw, Align all, float x, int y, const char *format, ...);
     void del(void);
     float z;
 private:

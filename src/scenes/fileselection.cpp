@@ -65,14 +65,14 @@ void SelectionScene::draw(void) {
             const char *sel = "";
             if (selection == i)
                 sel = "> ";
-            app->fontManager.print(app->screens->top, GFX::Left, offs, offs+y, "%s%s", sel, filelist[i].c_str());
+            app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, offs, offs+y, "%s%s", sel, filelist[i].c_str());
             y += 30;
         }
-        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2-20, "HOME - Exit\nA - Edit file\nY - Restore backup\nX - Backup\nB - Restore autobackup");
+        app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2-20, "HOME - Exit\nA - Edit file\nY - Restore backup\nX - Backup\nB - Restore autobackup");
     }
     else {
-        app->fontManager.print(app->screens->top, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "You have no savefiles!");
-        app->fontManager.print(app->screens->bottom, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "Press HOME to exit");
+        app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Center, GFX::SCR_TOP_W/2, GFX::SCR_TOP_H/2, "You have no savefiles!");
+        app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Center, GFX::SCR_BTM_W/2, GFX::SCR_BTM_H/2, "Press HOME to exit");
     }
 }
 

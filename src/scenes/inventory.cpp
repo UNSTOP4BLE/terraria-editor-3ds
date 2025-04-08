@@ -72,13 +72,13 @@ static float map_value(float value, float input_min, float input_max, float outp
 void InventoryScene::printItemInfo(int yoff, int id, Terraria::Item item, Terraria::Modifier mod, Terraria::CharacterData &data) {
     app->fontManager.setScale(0.8);
     std::string modifier = mod.name;
-    app->fontManager.print(app->screens->top, GFX::Left, 173, 5+yoff, "%s%s", ((mod.id != 0) ? (modifier).c_str() : ""), item.name);
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, 173, 5+yoff, "%s%s", ((mod.id != 0) ? (modifier).c_str() : ""), item.name);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type:\n%s", Terraria::getTotalItemCount(id, data), mod.type);
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, 170, 32+8+yoff, "%d in inventory\nModifier type:\n%s", Terraria::getTotalItemCount(id, data), mod.type);
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Right, GFX::SCR_TOP_W-16, 32+8+yoff, "id(%d)\nmod(%d)", id, mod.id);
 }
 
 void InventoryScene::changeItem(int slot, int id, bool replace) {
@@ -289,19 +289,19 @@ void InventoryScene::draw(void) {
         int curcount = parser.outdata.items[i].count;
         if (curcount > 1) {
             app->fontManager.setScale(0.7);
-            app->fontManager.print(app->screens->bottom, GFX::Right, r.x+r.w-2, r.y+r.h-18, "%d", curcount);
+            app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Right, r.x+r.w-2, r.y+r.h-18, "%d", curcount);
         }
     }
 
     //coins text
     app->fontManager.setScale(0.9);
     int y = coinsgrid.getItem(0).y-35;
-    app->fontManager.print(app->screens->bottom, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Coins:");
+    app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Coins:");
 
     //ammo text
     app->fontManager.setScale(0.9);
     y = ammogrid.getItem(0).y-35;
-    app->fontManager.print(app->screens->bottom, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Ammo:");
+    app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Left, invgrid.getItem(0).x+2, y-scroll, "Ammo:");
 
     //hider
     GFX::drawRect(app->screens->bottom, {0, 0, GFX::SCR_BTM_W, 37}, app->clearcol);
@@ -311,7 +311,7 @@ void InventoryScene::draw(void) {
     char str[128];
     sprintf(str, "%s%s\nPress B or tap back to exit without saving", "Press Start to save file, ", (editing ? "Press X to select item" : "Press X to edit"));
     app->fontManager.setScale(0.5);
-    app->fontManager.print(app->screens->bottom, GFX::Left, 20, 5, str);
+    app->fontManager.print(app->screens->bottom, GFX::SCR_BTM_W, GFX::Left, 20, 5, str);
 
     //buttons
     trashButton.draw();
@@ -325,7 +325,7 @@ void InventoryScene::draw(void) {
     if (editing) {
         GFX::drawRect(app->screens->top, {160, 0, 240, 117}, app->clearcol);
         app->fontManager.setScale(0.6);
-        app->fontManager.print(app->screens->top, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name\nA: type in item count\nRT: type in item modifier");
+        app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, 173, 5, "DPad L/R: change itemid\nDPad L/R + LT: change modifier\nDPad U/D: change item count\nY: type in item name\nA: type in item count\nRT: type in item modifier");
     }
     else {
         //item info
@@ -338,10 +338,10 @@ void InventoryScene::draw(void) {
 
     //text
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Center, 80, 15, "Editing: %s", parser.chardata.charname.c_str());
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Center, 80, 15, "Editing: %s", parser.chardata.charname.c_str());
 
     app->fontManager.setScale(0.8);
-    app->fontManager.print(app->screens->top, GFX::Center, 80, 126, "Replace with:");
+    app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Center, 80, 126, "Replace with:");
 }
 
 InventoryScene::~InventoryScene(void) {
