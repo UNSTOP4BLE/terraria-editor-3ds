@@ -42,8 +42,8 @@ void writeBackup(const char *backupPrefix, std::u16string srcpath, std::string f
 	time_t unixTime = time(NULL);
 	struct tm* timeStruct = gmtime((const time_t *)&unixTime);
 	int day = timeStruct->tm_mday;
-	int month = timeStruct->tm_mon;
-	int year = timeStruct->tm_year +1900;
+	int month = timeStruct->tm_mon+1;
+	int year = timeStruct->tm_year+1900;
 
     char path[128];
     sprintf(path, "%s%d-%d-%d/%s.bak", backupPrefix, day, month, year, filename.c_str());

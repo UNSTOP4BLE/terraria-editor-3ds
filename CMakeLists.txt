@@ -65,7 +65,7 @@ ctr_create_3dsx(${PROJECT_NAME}
 
 #banner
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bnr
-                   COMMAND ${BANNERTOOL} makebanner -ci ${PROJECT_SOURCE_DIR}/cia/banner.cgfx -a ${PROJECT_SOURCE_DIR}/cia/mus.wav -o ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bnr)
+                   COMMAND ${BANNERTOOL} makebanner -i ${PROJECT_SOURCE_DIR}/cia/banner.png -a ${PROJECT_SOURCE_DIR}/cia/mus.wav -o ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bnr)
 
 add_custom_target(build_bnr ALL
                   DEPENDS ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bnr)
