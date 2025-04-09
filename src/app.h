@@ -10,7 +10,7 @@ public:
     GFX::RenderScreens *screens;
     GFX::FontManager fontManager;
     KeyBoard keyboard;
-    Scene *currentScene;
+    SceneManager scenemgr;
     uint32_t clearcol;
     double deltatime;
     int elapsed;

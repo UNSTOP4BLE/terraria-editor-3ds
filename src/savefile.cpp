@@ -137,7 +137,7 @@ void SaveFileParser::readFile(const char16_t*path) {
     char16_t filename_utf16[13];
     for (int i = 0; i < chardata.filenamelength; i++)
         f.Read(&filename_utf16[i], sizeof(char16_t));
-
+    filename_utf16[chardata.filenamelength] = u'\0';
     chardata.charname = utf16_to_utf8(filename_utf16);
     f.Seek(0x46, FsLib::File::Current);
 

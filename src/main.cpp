@@ -2,8 +2,10 @@
 #include "app.h"
 #include "gfx.h"
 #include "pad.h"
+#include "scene.h"
 #include "scenes/disclamer.h"
 #include "fslib/FsLib.hpp"
+#include "scenes/inventory.h"
 #include <chrono>
 
 Terraeditor *app;
@@ -46,21 +48,24 @@ int main(void) {
     FsLib::OpenExtData(u"extdata", 0x000016A6);
 
     setScene(new DisclamerScene());
+	checkSwapScene();
 
 	std::chrono::time_point<std::chrono::system_clock> start = std::chrono::high_resolution_clock::now();
+
 	while(aptMainLoop()) {
         std::chrono::time_point<std::chrono::system_clock> last = std::chrono::high_resolution_clock::now();
         
 		Pad::Read();
 		GFX::clear(app->clearcol);
-  		app->currentScene->update();  
-		app->currentScene->draw();  
+		app->scenemgr.cur->update();
+		app->scenemgr.cur->draw();  
 		GFX::flip();
 
 		std::chrono::time_point<std::chrono::system_clock> current = std::chrono::high_resolution_clock::now();
         app->deltatime = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(current - last).count());
         last = current;
 		app->elapsed = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(current - start).count()) / 1000;
+		checkSwapScene();
 	}
 
 	// Deinit libs

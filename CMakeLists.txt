@@ -55,6 +55,7 @@ ctr_generate_smdh(${PROJECT_NAME}.smdh
   NAME "${PROJECT_NAME}"
   DESCRIPTION "${PROJECT_VERSION}"
   AUTHOR "UNSTOP4BLE"
+	ICON ${CMAKE_SOURCE_DIR}/cia/icon.png
 )
 
 ctr_create_3dsx(${PROJECT_NAME}

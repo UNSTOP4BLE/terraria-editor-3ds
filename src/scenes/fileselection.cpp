@@ -35,8 +35,6 @@ void SelectionScene::update(void) {
         std::string backuppath = AUTOBACKUP_PATH + filelist[selection] + ".bak";
         if (Pad::Pressed(Pad::KEY_Y))
             setScene(new RestoreScene());
-        else if (Pad::Pressed(Pad::KEY_A))
-            setScene(new InventoryScene(utf8_to_utf16(path)));
         else if (Pad::Pressed(Pad::KEY_X)) {
             if (confirmScreen()) {
                 writeBackup(BACKUP_PATH, utf8_to_utf16(path), filelist[selection].c_str());
@@ -54,6 +52,8 @@ void SelectionScene::update(void) {
             else 
                 setScene(new SavingScene(" You have no autobackups,\nthey are made automatically\n  by editing the save file"));
         }
+        else if (Pad::Pressed(Pad::KEY_A))
+            setScene(new InventoryScene(utf8_to_utf16(path)));
     }
 }
 

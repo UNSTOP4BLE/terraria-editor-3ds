@@ -10,5 +10,12 @@ public:
     virtual ~Scene(void) {}
 };
 
+class SceneManager {
+public:
+    Scene *cur;
+    Scene *next;
+};
+    
 void setScene(Scene *scn);
 void setSceneCol(uint32_t color);
+void checkSwapScene(void);
