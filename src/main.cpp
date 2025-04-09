@@ -14,7 +14,7 @@ void ErrMSG(const char *filename, const char *function, int line, const char *ex
 {
 	char errstr[512];
     sprintf(errstr, "error\nmessage: %s\nexpression: %s\nfile: %s\nfunction: %s\nline %d", msg, expr, filename, function, line);
-    while(1)
+    while(aptMainLoop())
     {
 		GFX::clear(app->clearcol);
         app->fontManager.print(app->screens->top, GFX::SCR_TOP_W, GFX::Left, 0, 0, errstr);
@@ -23,7 +23,7 @@ void ErrMSG(const char *filename, const char *function, int line, const char *ex
 }
 
 bool confirmScreen(void) {
-    while(1)
+    while(aptMainLoop())
     {
 		Pad::Read();
 		GFX::clear(app->clearcol);
@@ -35,6 +35,7 @@ bool confirmScreen(void) {
 			return false;
 		GFX::flip();
     }
+	return false;
 }
 
 int main(void) {

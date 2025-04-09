@@ -48,11 +48,13 @@ void writeBackup(const char *backupPrefix, std::u16string srcpath, std::string f
     char path[128];
     sprintf(path, "%s%d-%d-%d/%s.bak", backupPrefix, day, month, year, filename.c_str());
     if (!strcmp(backupPrefix, AUTOBACKUP_PATH))   
-        sprintf(path, "%s/%s.bak", backupPrefix, filename.c_str());
+        sprintf(path, "%s%s.bak", backupPrefix, filename.c_str());
     initFileSystem(path);
     
     FILE *fout = fopen(path, "wb");
-    ASSERTFUNC(fout,"failed to write backup save file");
+    char msg[256];
+    sprintf(msg, "failed to write backup save file: %s", path);
+    ASSERTFUNC(fout, msg);
     fwrite(indata, filesize, 1, fout);
     fclose(fout);
 }
