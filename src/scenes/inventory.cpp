@@ -8,11 +8,13 @@
 #include <cstring>
 #include "../backup.h"
 
+
 InventoryScene::InventoryScene(std::u16string path) {
     setSceneCol(C2D_Color32(51, 85, 153, 255));
     editing = false;
     selecteditem = 0;
     scroll = 0;
+    pushdelaytime = 0;
     scrollbar = {309, 45};
 
     invhotbar = C2D_SpriteSheetLoad("romfs:/buttons/hotbar/hotbar.t3x");
@@ -53,6 +55,10 @@ InventoryScene::InventoryScene(std::u16string path) {
             sprintf(itmpath, "romfs:/items/Item_empty.png");
         else
             sprintf(itmpath, "romfs:/items/Item_%d.png", Terraria::getItem(id,parser).id);
+     
+        if (access(itmpath, F_OK) != 0)
+            sprintf(itmpath, "romfs:/items/Item_0.png");
+    
         tex_invitems[i] = GFX::loadTex(itmpath);
     }
 
@@ -90,6 +96,10 @@ void InventoryScene::changeItem(int slot, int id, bool replace) {
     if (curitem.actualitem->id == 0)
         sprintf(itmpath, "romfs:/items/Item_empty.png");
     GFX::freeTex(&curitem.tex);
+
+    if (access(itmpath, F_OK) != 0)
+        sprintf(itmpath, "romfs:/items/Item_0.png");
+
     curitem.tex = GFX::loadTex(itmpath);
     //replace item
     currepitem.actualitem = &parser.outdata.items[slot];
@@ -104,9 +114,13 @@ void InventoryScene::changeItem(int slot, int id, bool replace) {
     else if (currepitem.actualitem->count == 0)
         currepitem.actualitem->count = 1;
     GFX::freeTex(&currepitem.tex);
+    if (access(itmpath, F_OK) != 0)
+        sprintf(itmpath, "romfs:/items/Item_0.png");
     currepitem.tex = GFX::loadTex(itmpath);
     if (replace) {
         GFX::freeTex(&tex_invitems[slot]);
+        if (access(itmpath, F_OK) != 0)
+            sprintf(itmpath, "romfs:/items/Item_0.png");
         tex_invitems[slot] = GFX::loadTex(itmpath);
     }
 }
@@ -151,10 +165,18 @@ void InventoryScene::update(void) {
             currepitem.update(item->id, item->count, item->mod, parser);
         }
         else { //items
-            if (Pad::Pressed(Pad::KEY_DLEFT))
-                item->id -= 1;
-            else if (Pad::Pressed(Pad::KEY_DRIGHT))
-                item->id += 1;
+            if (Pad::Held(Pad::KEY_DLEFT) || Pad::Held(Pad::KEY_DRIGHT)) {
+                bool isLeft = Pad::Held(Pad::KEY_DLEFT);
+                bool isPressed = isLeft ? Pad::Pressed(Pad::KEY_DLEFT) : Pad::Pressed(Pad::KEY_DRIGHT);
+            
+                if (isPressed || app->elapsed > pushdelaytime + 0.5f) {
+                    if (isPressed) pushdelaytime = app->elapsed;
+                    int direction = (isLeft ? -1 : 1);
+                    int multiplier = (app->elapsed - pushdelaytime > 4) ? 100 : (app->elapsed - pushdelaytime > 2) ? 10 : 1;
+                    item->id += direction * multiplier;
+                }
+            }
+            
             if (Pad::Pressed(Pad::KEY_DUP))
                 item->count += 1;
             else if (Pad::Pressed(Pad::KEY_DDOWN))

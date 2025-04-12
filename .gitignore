@@ -5,3 +5,6 @@ build-debug
 .vscode/settings.json
 build.sh
 buildlaunch.sh
+/tertexpng/output_sprites
+/tertexpng/items_folder
+/tertexpng/sprites.txt

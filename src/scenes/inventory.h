@@ -25,6 +25,7 @@ private:
     bool editing;
     int selecteditem;
     int scroll;
+    float pushdelaytime;
     int max_scroll;
     GFX::XY<int> scrollbar;
     Terraria::SaveFileParser parser;

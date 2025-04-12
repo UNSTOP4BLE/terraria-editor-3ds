@@ -1,0 +1,27 @@
+count,path,definitioncount,definition
+
+counts are always uint8_t
+texture:
+countofpath(char),path 
+
+sprite: 16bytes in size
+    sprcontname,name     # xywh starts immediatley
+    xywh, 2 bytes spacing xywh is uint16
+    2 bytes end sprite 
+
+struct Sprite {
+    uint8_t chcount;
+    char str[chcount];
+    struct alignas(4) Rect { // xx00yy00ww00hh00
+        uint16_t x;
+        uint16_t y;
+        uint16_t w;
+        uint16_t h;
+    }
+}
+
+
+if sizeof(sprite)+1 bytes == 0 then its a new texture
+else its a next sprite
+
+texture,sprite,sprite,sprite...(1 byte space)texture,sprite,sprite,sprite...

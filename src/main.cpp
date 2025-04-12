@@ -65,7 +65,7 @@ int main(void) {
 		std::chrono::time_point<std::chrono::system_clock> current = std::chrono::high_resolution_clock::now();
         app->deltatime = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(current - last).count());
         last = current;
-		app->elapsed = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(current - start).count()) / 1000;
+		app->elapsed = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(current - start).count()) / 1000;
 		checkSwapScene();
 	}
 

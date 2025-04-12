@@ -13,7 +13,7 @@ public:
     SceneManager scenemgr;
     uint32_t clearcol;
     double deltatime;
-    int elapsed;
+    float elapsed;
 };
 
 void ErrMSG(const char *filename, const char *function, int line, const char *expr, const char *msg);
