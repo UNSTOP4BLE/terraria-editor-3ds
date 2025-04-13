@@ -108,4 +108,26 @@ int getTotalItemCount(int id, CharacterData &data) {
     return count;
 }
 
+int getNextId(int id, SaveFileParser &parser) {
+    auto it = std::find_if(parser.allitems.begin(), parser.allitems.end(), [id](const Item& item) {
+        return item.id >= id;
+    });
+    
+    if (it != parser.allitems.end()) 
+        return it->id; 
+    else
+        return id;
+}
+
+int getPreviousId(int id, SaveFileParser &parser) {
+    auto it = std::find_if(parser.allitems.rbegin(), parser.allitems.rend(), [id](const Item& item) {
+        return item.id <= id;
+    });
+
+    if (it != parser.allitems.rend()) 
+        return it->id;
+    else
+        return id;
+}
+
 }

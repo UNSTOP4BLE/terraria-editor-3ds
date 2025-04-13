@@ -1,27 +1,34 @@
 import os
 from PIL import Image
+from PIL import ImageChops
 
 def trim_duplicated_borders(img):
     w, h = img.size
-    px = img.load()
+
+    def get_column(img, x):
+        return img.crop((x, 0, x + 1, h))
+
+    def get_row(img, y):
+        return img.crop((0, y, w, y + 1))
 
     left = 0
-    while left + 1 < w and all(px[left, y] == px[left + 1, y] for y in range(h)):
-        left += 1
-
-    right = w - 1
-    while right - 1 > left and all(px[right, y] == px[right - 1, y] for y in range(h)):
-        right -= 1
-
+    right = w
     top = 0
-    while top + 1 < h and all(px[x, top] == px[x, top + 1] for x in range(w)):
-        top += 1
+    bottom = h
 
-    bottom = h - 1
-    while bottom - 1 > top and all(px[x, bottom] == px[x, bottom - 1] for x in range(w)):
-        bottom -= 1
+    if w > 1 and ImageChops.difference(get_column(img, 0), get_column(img, 1)).getbbox() is None:
+        left = 1
+    if w > 1 and ImageChops.difference(get_column(img, w - 1), get_column(img, w - 2)).getbbox() is None:
+        right = w - 1
+    if h > 1 and ImageChops.difference(get_row(img, 0), get_row(img, 1)).getbbox() is None:
+        top = 1
+    if h > 1 and ImageChops.difference(get_row(img, h - 1), get_row(img, h - 2)).getbbox() is None:
+        bottom = h - 1
 
-    return img.crop((left, top, right + 1, bottom + 1))
+    if right > left and bottom > top:
+        return img.crop((left, top, right, bottom))
+    else:
+        return img
 
 spritesheet_dir = "."
 output_dir = "output_sprites"

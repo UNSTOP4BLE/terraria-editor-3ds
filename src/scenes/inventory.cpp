@@ -173,7 +173,10 @@ void InventoryScene::update(void) {
                     if (isPressed) pushdelaytime = app->elapsed;
                     int direction = (isLeft ? -1 : 1);
                     int multiplier = (app->elapsed - pushdelaytime > 4) ? 100 : (app->elapsed - pushdelaytime > 2) ? 10 : 1;
-                    item->id += direction * multiplier;
+                    if (direction > 0)
+                        item->id = Terraria::getNextId(item->id+direction * multiplier, parser);
+                    else
+                        item->id = Terraria::getPreviousId(item->id+direction * multiplier, parser);
                 }
             }
             
